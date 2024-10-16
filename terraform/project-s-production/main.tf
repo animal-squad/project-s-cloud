@@ -16,6 +16,10 @@ locals {
   vpc_cidr = "192.168.0.0/20"
 }
 
+/*
+  VPC
+*/
+
 resource "aws_vpc" "vpc" {
   cidr_block = local.vpc_cidr
 
@@ -31,6 +35,10 @@ resource "aws_internet_gateway" "ig" {
     Name = "${local.name}-ig"
   }
 }
+
+/*
+  Public Subnet
+*/
 
 resource "aws_subnet" "public" {
   vpc_id            = aws_vpc.vpc.id
