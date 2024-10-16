@@ -68,3 +68,29 @@ resource "aws_route" "public_internet_gateway" {
   destination_cidr_block = "0.0.0.0/0"
   gateway_id             = aws_internet_gateway.ig.id
 }
+
+/*
+  Private Subnet
+*/
+
+resource "aws_subnet" "private_for_ec2" {
+  count = 2
+
+  vpc_id            = aws_vpc.vpc.id
+  availability_zone = local.azs[count.index]
+  cidr_block        = cidrsubnet(local.vpc_cidr, 4, count.index + 1)
+
+  tags = {
+    Name = "${local.name}-${local.azs[count.index]}-private-ec2-subnet-${count.index}"
+  }
+}
+
+resource "aws_subnet" "private_for_rds" {
+  vpc_id            = aws_vpc.vpc.id
+  availability_zone = local.azs[1]
+  cidr_block        = cidrsubnet(local.vpc_cidr, 4, 3)
+
+  tags = {
+    Name = "${local.name}-${local.azs[count.index]}-private-rds-subnet"
+  }
+}
