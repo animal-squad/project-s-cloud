@@ -74,7 +74,7 @@ resource "aws_route" "public_internet_gateway" {
 }
 
 /*
-  Private Subnet
+  Private Subnet For EC2
 */
 
 resource "aws_subnet" "private_for_ec2" {
@@ -88,6 +88,31 @@ resource "aws_subnet" "private_for_ec2" {
     Name = "${local.name}-${local.azs[count.index]}-private-ec2-subnet-${count.index}"
   }
 }
+
+resource "aws_route_table" "private_ec2" {
+  vpc_id = aws_vpc.vpc.id
+
+  tags = {
+    Name = "${local.name}-private-ec2-route-table"
+  }
+}
+
+resource "aws_route" "private_ec2_nat_gateway" {
+  route_table_id         = aws_route_table.private_ec2.id
+  destination_cidr_block = "0.0.0.0/0"
+  nat_gateway_id         = aws_nat_gateway.public_nat_gateway.id
+}
+
+resource "aws_route_table_association" "private" {
+  for_each = aws_subnet.private_for_ec2
+
+  subnet_id      = each.value.id
+  route_table_id = aws_route.private_ec2_nat_gateway.id
+}
+
+/*
+  Private Subnet For RDS
+*/
 
 resource "aws_subnet" "private_for_rds" {
   vpc_id            = aws_vpc.vpc.id
