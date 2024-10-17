@@ -14,6 +14,15 @@ locals {
   azs  = data.aws_availability_zones.available.names
 
   vpc_cidr = "192.168.0.0/20"
+
+  //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
+  rds_config = {
+    db_name        = "db"
+    engine_version = "14.13"
+    username       = "user"
+    password       = "password"
+    port           = "5432"
+  }
 }
 
 /*
@@ -147,4 +156,61 @@ resource "aws_nat_gateway" "public_nat_gateway" {
   }
 
   depends_on = [aws_route.public_internet_gateway]
+}
+
+/*
+  RDS
+*/
+
+resource "aws_db_subnet_group" "rds_subnet_group" {
+  name       = "${local.name}-rds-subnet-group"
+  subnet_ids = [aws_subnet.private_for_rds.id]
+
+  tags = {
+    Name = "${local.name}-rds-subnet-group"
+  }
+}
+
+resource "aws_security_group" "example" {
+  name        = "security-group-for-ec2"
+  description = "allow to ${local.name}-private-ec2"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    from_port = local.rds_config.port
+    to_port   = local.rds_config.por
+    protocol  = "tcp"
+    //TODO: ec2 보안그룹으로 변경
+    // source_security_group_id =
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_db_instance" "default" {
+  //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
+  allocated_storage       = 20
+  max_allocated_storage   = 1000
+  instance_class          = "db.t3.micro"
+  backup_retention_period = 0
+  backup_target           = "region"
+  port                    = local.rds_config.port
+
+  db_name                      = local.rds_config.db_name
+  engine                       = "postgres"
+  engine_version               = "8.0"
+  username                     = local.rds_config.username
+  password                     = local.rds_config.password
+  skip_final_snapshot          = true
+  availability_zone            = local.azs[1]
+  performance_insights_enabled = true
+
+  db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
+  vpc_security_group_ids = [aws_security_group.example.id]
 }
