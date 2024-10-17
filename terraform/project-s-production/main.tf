@@ -23,6 +23,11 @@ locals {
     password       = "password"
     port           = "5432"
   }
+
+  ec2_config = {
+    ami           = "ami-0dd19c76a9f10fdf9"
+    instance_type = "t4g.medium"
+  }
 }
 
 /*
@@ -217,48 +222,11 @@ resource "aws_db_instance" "rds" {
   EC2
 */
 
-data "aws_ami" "amazon_linux_2023" {
-  owners      = ["amazon"]
-  most_recent = true
-
-  filter {
-    name   = "name"
-    values = ["ami-*"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-}
-resource "aws_security_group" "ec2_for_master" {
-  name        = "${local.name}-sg-ec2-for-master"
-  description = "security group of ec2 for master"
-  vpc_id      = aws_vpc.vpc.id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
 resource "aws_instance" "ec2_for_master" {
-  instance_type = "t3.medium"
+  instance_type = local.ec2_config.instance_type
 
   //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
-  ami               = data.aws_ami.amazon_linux_2023
+  ami               = local.ec2_config.ami
   availability_zone = local.azs[0]
   subnet_id         = aws_subnet.private_for_ec2[0].id
   security_groups   = [aws_security_group.ec2_for_master]
@@ -295,10 +263,10 @@ resource "aws_security_group" "ec2_for_worker" {
 }
 
 resource "aws_instance" "ec2_for_worker" {
-  instance_type = "t3.medium"
+  instance_type = local.ec2_config.instance_type
 
   //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
-  ami               = data.aws_ami.amazon_linux_2023
+  ami               = local.ec2_config.ami
   availability_zone = local.azs[1]
   subnet_id         = aws_subnet.private_for_ec2[1].id
   security_groups   = [aws_security_group.ec2_for_worker]
