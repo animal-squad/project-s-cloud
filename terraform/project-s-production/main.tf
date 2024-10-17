@@ -135,7 +135,7 @@ resource "aws_eip" "nat" {
     Name = "${local.name}-${local.azs[0]}-eip"
   }
 
-  depends_on = [aws_internet_gateway.this]
+  depends_on = [aws_route.public_internet_gateway]
 }
 
 resource "aws_nat_gateway" "public_nat_gateway" {
@@ -146,5 +146,5 @@ resource "aws_nat_gateway" "public_nat_gateway" {
     Name = "${local.name}-${local.azs[0]}-nat-gateway"
   }
 
-  depends_on = [aws_internet_gateway.this]
+  depends_on = [aws_route.public_internet_gateway]
 }
