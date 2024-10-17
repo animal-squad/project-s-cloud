@@ -171,18 +171,16 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
   }
 }
 
-resource "aws_security_group" "example" {
-  name        = "security-group-for-ec2"
-  description = "allow to ${local.name}-private-ec2"
+resource "aws_security_group" "rds" {
+  name        = "${local.name}-rds-security-group"
+  description = "rds's security group"
   vpc_id      = aws_vpc.vpc.id
 
   ingress {
-    from_port = local.rds_config.port
-    to_port   = local.rds_config.por
-    protocol  = "tcp"
-    //TODO: ec2 보안그룹으로 변경
-    // source_security_group_id =
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port       = local.rds_config.port
+    to_port         = local.rds_config.port
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2_for_master, aws_security_group.ec2_for_worker]
   }
 
   egress {
@@ -193,7 +191,7 @@ resource "aws_security_group" "example" {
   }
 }
 
-resource "aws_db_instance" "default" {
+resource "aws_db_instance" "rds" {
   //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
   allocated_storage       = 20
   max_allocated_storage   = 1000
@@ -212,5 +210,114 @@ resource "aws_db_instance" "default" {
   performance_insights_enabled = true
 
   db_subnet_group_name   = aws_db_subnet_group.rds_subnet_group.name
-  vpc_security_group_ids = [aws_security_group.example.id]
+  vpc_security_group_ids = [aws_security_group.rds.id]
 }
+
+/*
+  EC2
+*/
+
+data "aws_ami" "amazon_linux_2023" {
+  owners      = ["amazon"]
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = ["ami-*"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+}
+resource "aws_security_group" "ec2_for_master" {
+  name        = "${local.name}-sg-ec2-for-master"
+  description = "security group of ec2 for master"
+  vpc_id      = aws_vpc.vpc.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "ec2_for_master" {
+  instance_type = "t3.medium"
+
+  //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
+  ami               = data.aws_ami.amazon_linux_2023
+  availability_zone = local.azs[0]
+  subnet_id         = aws_subnet.private_for_ec2[0].id
+  security_groups   = [aws_security_group.ec2_for_master]
+  key_name          = null
+
+  tags = {
+    Name = "${local.name}-${local.azs[0]}-ec2-for-master"
+  }
+
+  ebs_block_device {
+    //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
+    device_name           = "/dev/sdb"
+    volume_size           = 30
+    volume_type           = "gp3"
+    delete_on_termination = true
+
+    tags = {
+      Name = "${local.name}-${local.azs[0]}-ec2-for-master"
+    }
+  }
+}
+
+resource "aws_security_group" "ec2_for_worker" {
+  name        = "${local.name}-sg-ec2_for_worker"
+  description = "security group of ec2 for worker"
+  vpc_id      = aws_vpc.vpc.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_instance" "ec2_for_worker" {
+  instance_type = "t3.medium"
+
+  //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
+  ami               = data.aws_ami.amazon_linux_2023
+  availability_zone = local.azs[1]
+  subnet_id         = aws_subnet.private_for_ec2[1].id
+  security_groups   = [aws_security_group.ec2_for_worker]
+  key_name          = null
+
+  tags = {
+    Name = "${local.name}-${local.azs[1]}-ec2-for-worker"
+  }
+
+  ebs_block_device {
+    //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
+    device_name           = "/dev/sdb"
+    volume_size           = 30
+    volume_type           = "gp3"
+    delete_on_termination = true
+    tags = {
+      Name = "${local.name}-${local.azs[1]}-ec2-for-worker"
+    }
+  }
+
+}
+
