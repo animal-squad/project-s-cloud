@@ -104,9 +104,8 @@ resource "aws_route" "private_ec2_nat_gateway" {
 }
 
 resource "aws_route_table_association" "private" {
-  for_each = aws_subnet.private_for_ec2
-
-  subnet_id      = each.value.id
+  count          = 2
+  subnet_id      = aws_subnet.private_for_ec2[count_index].id
   route_table_id = aws_route.private_ec2_nat_gateway.id
 }
 
