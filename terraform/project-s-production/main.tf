@@ -42,7 +42,7 @@ resource "aws_vpc" "vpc" {
 */
 
 resource "aws_internet_gateway" "ig" {
-  vpc_id = aws_vpc.vpc.vpc_id
+  vpc_id = aws_vpc.vpc.id
 
   tags = {
     Name = "${local.name}-ig"
@@ -64,7 +64,7 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_route_table" "public" {
-  vpc_id = vpc.vpc.vpc_id
+  vpc_id = aws_vpc.vpc.id
 
   tags = {
     Name = "${local.name}-public-route-table"
