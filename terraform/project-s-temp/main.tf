@@ -1,11 +1,11 @@
 provider "aws" {
-  region     = local.region
+  region = local.region
   # access_key = //TODO: 키 발급해야 함
   # secret_key = //TODO: 키 발급해야 함
 
   default_tags {
     tags = {
-      Environment = "production"
+      Environment = "temp"
       CreatedBy   = "Terraform"
     }
   }
@@ -20,10 +20,10 @@ locals {
 
   //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
   rds_config = {
-    db_name        = //TODO: DB 이름은 모두 영어로만 가능
+    db_name        = "tempdbforprojects"
     engine_version = "14.13"
-    username       = //TODO: 유저 이름은 user와 같은 단순한 이름 불가능
-    password       = //TODO: 비밀번호는 password 같은 위험한 암호 사용 불가능
+    username       = "animalsquad"
+    password       = "animalsquadpassword" //XXX: 실제 환경에서 사용하면 안됨
     port           = "5432"
   }
 
@@ -131,7 +131,7 @@ resource "aws_route_table_association" "private" {
 */
 
 resource "aws_subnet" "private_for_rds" {
-  count             = 2
+  count = 2
 
   vpc_id            = aws_vpc.vpc.id
   availability_zone = local.azs[count.index]

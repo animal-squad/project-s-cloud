@@ -4,7 +4,7 @@ terraform {
 
     workspaces {
       project = basename(path.cwd)
-      tags    = ["project-s", "production", "source:cli"]
+      tags    = ["project-s", "temp", "source:cli"]
     }
   }
 }
