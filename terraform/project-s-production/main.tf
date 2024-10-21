@@ -1,5 +1,7 @@
 provider "aws" {
-  region = var.region
+  region     = local.region
+  # access_key = //TODO: 키 발급해야 함
+  # secret_key = //TODO: 키 발급해야 함
 
   default_tags {
     tags = {
@@ -10,22 +12,23 @@ provider "aws" {
 }
 
 locals {
-  name = basename(path.cwd)
-  azs  = data.aws_availability_zones.available.names
+  name   = basename(path.cwd)
+  azs    = data.aws_availability_zones.available.names
+  region = "ap-northeast-2" //NOTE: 서울
 
-  vpc_cidr = "192.168.0.0/20"
+  vpc_cidr = "10.0.0.0/20" //NOTE: 계정 내에서 중복된 cidr를 선언하지 않았는지 확인 필요
 
   //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
   rds_config = {
-    db_name        = "db"
+    db_name        = //TODO: DB 이름은 모두 영어로만 가능
     engine_version = "14.13"
-    username       = "user"
-    password       = "password"
+    username       = //TODO: 유저 이름은 user와 같은 단순한 이름 불가능
+    password       = //TODO: 비밀번호는 password 같은 위험한 암호 사용 불가능
     port           = "5432"
   }
 
   ec2_config = {
-    ami           = "ami-0dd19c76a9f10fdf9"
+    ami           = "ami-096099377d8850a97" // NOTE: region 별로 ami 코드가 다를 수 있음.
     instance_type = "t4g.medium"
   }
 }
@@ -119,8 +122,8 @@ resource "aws_route" "private_ec2_nat_gateway" {
 
 resource "aws_route_table_association" "private" {
   count          = 2
-  subnet_id      = aws_subnet.private_for_ec2[count_index].id
-  route_table_id = aws_route.private_ec2_nat_gateway.id
+  subnet_id      = aws_subnet.private_for_ec2[count.index].id
+  route_table_id = aws_route_table.private_ec2.id
 }
 
 /*
@@ -128,9 +131,11 @@ resource "aws_route_table_association" "private" {
 */
 
 resource "aws_subnet" "private_for_rds" {
+  count             = 2
+
   vpc_id            = aws_vpc.vpc.id
-  availability_zone = local.azs[1]
-  cidr_block        = cidrsubnet(local.vpc_cidr, 4, 3)
+  availability_zone = local.azs[count.index]
+  cidr_block        = cidrsubnet(local.vpc_cidr, 4, 3 + count.index)
 
   tags = {
     Name = "${local.name}-${local.azs[count.index]}-private-rds-subnet"
@@ -169,7 +174,7 @@ resource "aws_nat_gateway" "public_nat_gateway" {
 
 resource "aws_db_subnet_group" "rds_subnet_group" {
   name       = "${local.name}-rds-subnet-group"
-  subnet_ids = [aws_subnet.private_for_rds.id]
+  subnet_ids = aws_subnet.private_for_rds[*].id //NOTE: 필수적으로 2개 이상의 az를 다루어야 함
 
   tags = {
     Name = "${local.name}-rds-subnet-group"
@@ -177,15 +182,15 @@ resource "aws_db_subnet_group" "rds_subnet_group" {
 }
 
 resource "aws_security_group" "rds" {
-  name        = "${local.name}-rds-security-group"
-  description = "rds's security group"
+  name        = "${local.name}-rds-sg"
+  description = "${local.name} rds security group"
   vpc_id      = aws_vpc.vpc.id
 
   ingress {
     from_port       = local.rds_config.port
     to_port         = local.rds_config.port
     protocol        = "tcp"
-    security_groups = [aws_security_group.ec2_for_master, aws_security_group.ec2_for_worker]
+    security_groups = [aws_security_group.ec2_for_master.id, aws_security_group.ec2_for_worker.id]
   }
 
   egress {
@@ -207,7 +212,7 @@ resource "aws_db_instance" "rds" {
 
   db_name                      = local.rds_config.db_name
   engine                       = "postgres"
-  engine_version               = "8.0"
+  engine_version               = "14.13"
   username                     = local.rds_config.username
   password                     = local.rds_config.password
   skip_final_snapshot          = true
@@ -222,6 +227,19 @@ resource "aws_db_instance" "rds" {
   EC2
 */
 
+resource "aws_security_group" "ec2_for_master" {
+  name        = "${local.name}-sg-ec2-m"
+  description = "security group of ec2 for master"
+  vpc_id      = aws_vpc.vpc.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
 resource "aws_instance" "ec2_for_master" {
   instance_type = local.ec2_config.instance_type
 
@@ -229,7 +247,7 @@ resource "aws_instance" "ec2_for_master" {
   ami               = local.ec2_config.ami
   availability_zone = local.azs[0]
   subnet_id         = aws_subnet.private_for_ec2[0].id
-  security_groups   = [aws_security_group.ec2_for_master]
+  security_groups   = [aws_security_group.ec2_for_master.id]
   key_name          = null
 
   tags = {
@@ -250,7 +268,7 @@ resource "aws_instance" "ec2_for_master" {
 }
 
 resource "aws_security_group" "ec2_for_worker" {
-  name        = "${local.name}-sg-ec2_for_worker"
+  name        = "${local.name}-sg-ec2-w"
   description = "security group of ec2 for worker"
   vpc_id      = aws_vpc.vpc.id
 
@@ -269,7 +287,7 @@ resource "aws_instance" "ec2_for_worker" {
   ami               = local.ec2_config.ami
   availability_zone = local.azs[1]
   subnet_id         = aws_subnet.private_for_ec2[1].id
-  security_groups   = [aws_security_group.ec2_for_worker]
+  security_groups   = [aws_security_group.ec2_for_worker.id]
   key_name          = null
 
   tags = {
@@ -289,3 +307,73 @@ resource "aws_instance" "ec2_for_worker" {
 
 }
 
+/*
+  ALB
+*/
+
+resource "aws_security_group" "alb" {
+  name        = "${local.name}-sg-alb"
+  description = "security group of alb"
+  vpc_id      = aws_vpc.vpc.id
+
+  ingress {
+    from_port   = 443
+    to_port     = 445
+    protocol    = "tcp"
+    description = "HTTPS web traffic"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port   = 80
+    to_port     = 82
+    protocol    = "tcp"
+    description = "HTTP web traffic"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_lb" "alb" {
+  name              = "${local.name}-alb"
+  subnets           = aws_subnet.private_for_ec2[*].id
+  security_groups   = [aws_security_group.alb.id]
+  client_keep_alive = 3600 // Default
+}
+
+resource "aws_lb_target_group" "ec2" {
+  name     = "${local.name}-tg-ec2"
+  port     = 80
+  protocol = "HTTP"
+  vpc_id   = aws_vpc.vpc.id
+}
+
+resource "aws_lb_target_group_attachment" "ec2_master" {
+  target_group_arn = aws_lb_target_group.ec2.arn
+  target_id        = aws_instance.ec2_for_master.id
+  port             = 80
+}
+
+resource "aws_lb_target_group_attachment" "ec2_worker" {
+  target_group_arn = aws_lb_target_group.ec2.arn
+  target_id        = aws_instance.ec2_for_worker.id
+  port             = 80
+}
+
+//XXX: 현재 HTTP 통신중 HTTPS로 통신해야 함
+resource "aws_lb_listener" "alb_listener" {
+  load_balancer_arn = aws_lb.alb.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.ec2.arn
+  }
+}
