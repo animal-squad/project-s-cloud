@@ -1,3 +1,6 @@
+//TODO: private subnet에 있는 ec2에 접근할 수 있도록 SSM 설정을 해야함
+//TODO: SSM 설정을 위하여 private EC2에 Role 부여 및 VPC endpoint를 추가해야함
+
 provider "aws" {
   region     = local.region
   # access_key = //TODO: 키 발급해야 함
