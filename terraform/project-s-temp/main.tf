@@ -1,5 +1,5 @@
 provider "aws" {
-  region = local.region
+  region     = local.region
   # access_key = //TODO: 키 발급해야 함
   # secret_key = //TODO: 키 발급해야 함
 
@@ -31,6 +31,22 @@ locals {
     ami           = "ami-096099377d8850a97" // NOTE: region 별로 ami 코드가 다를 수 있음.
     instance_type = "t4g.medium"
   }
+}
+
+//NOTE: private key
+resource "tls_private_key" "for_ec2" {
+  algorithm = "RSA"
+  rsa_bits  = 4096
+}
+
+resource "aws_key_pair" "for_ec2" {
+  key_name   = "${local.name}-key"
+  public_key = tls_private_key.for_ec2.public_key_openssh
+}
+
+output "private_key_path" {
+  value     = tls_private_key.for_ec2.private_key_pem
+  sensitive = true
 }
 
 /*
@@ -114,10 +130,16 @@ resource "aws_route_table" "private_ec2" {
   }
 }
 
-resource "aws_route" "private_ec2_nat_gateway" {
+# resource "aws_route" "private_ec2_nat_gateway" {
+#   route_table_id         = aws_route_table.private_ec2.id
+#   destination_cidr_block = "0.0.0.0/0"
+#   nat_gateway_id         = aws_nat_gateway.public_nat_gateway.id
+# }
+
+resource "aws_route" "private_internet_gateway" {
   route_table_id         = aws_route_table.private_ec2.id
   destination_cidr_block = "0.0.0.0/0"
-  nat_gateway_id         = aws_nat_gateway.public_nat_gateway.id
+  gateway_id             = aws_internet_gateway.ig.id
 }
 
 resource "aws_route_table_association" "private" {
@@ -232,6 +254,13 @@ resource "aws_security_group" "ec2_for_master" {
   description = "security group of ec2 for master"
   vpc_id      = aws_vpc.vpc.id
 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -244,11 +273,12 @@ resource "aws_instance" "ec2_for_master" {
   instance_type = local.ec2_config.instance_type
 
   //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
-  ami               = local.ec2_config.ami
-  availability_zone = local.azs[0]
-  subnet_id         = aws_subnet.private_for_ec2[0].id
-  security_groups   = [aws_security_group.ec2_for_master.id]
-  key_name          = null
+  ami                         = local.ec2_config.ami
+  availability_zone           = local.azs[0]
+  subnet_id                   = aws_subnet.private_for_ec2[0].id
+  security_groups             = [aws_security_group.ec2_for_master.id]
+  key_name                    = aws_key_pair.for_ec2.key_name
+  associate_public_ip_address = true
 
   tags = {
     Name = "${local.name}-${local.azs[0]}-ec2-for-master"
@@ -272,6 +302,13 @@ resource "aws_security_group" "ec2_for_worker" {
   description = "security group of ec2 for worker"
   vpc_id      = aws_vpc.vpc.id
 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -284,11 +321,13 @@ resource "aws_instance" "ec2_for_worker" {
   instance_type = local.ec2_config.instance_type
 
   //TODO: 상세 스펙 Apply 전 다시 한 번 확인하기
-  ami               = local.ec2_config.ami
-  availability_zone = local.azs[1]
-  subnet_id         = aws_subnet.private_for_ec2[1].id
-  security_groups   = [aws_security_group.ec2_for_worker.id]
-  key_name          = null
+  ami                         = local.ec2_config.ami
+  availability_zone           = local.azs[1]
+  subnet_id                   = aws_subnet.private_for_ec2[1].id
+  security_groups             = [aws_security_group.ec2_for_worker.id]
+  key_name                    = aws_key_pair.for_ec2.key_name
+  associate_public_ip_address = true
+
 
   tags = {
     Name = "${local.name}-${local.azs[1]}-ec2-for-worker"

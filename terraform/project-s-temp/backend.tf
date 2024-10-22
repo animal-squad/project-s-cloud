@@ -3,7 +3,7 @@ terraform {
     organization = "animal-squad"
 
     workspaces {
-      project = basename(path.cwd)
+      project = "project-s-temp"
       tags    = ["project-s", "temp", "source:cli"]
     }
   }

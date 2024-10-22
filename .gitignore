@@ -11,3 +11,6 @@
 # terraformrc file
 terraform.rc
 .terraformrc
+
+registry.terraform.io
+.DS_Store
