@@ -29,4 +29,8 @@ resource "aws_db_instance" "rds" {
 
   skip_final_snapshot          = true
   performance_insights_enabled = true
+
+  tags = {
+    Name = "${var.name_prefix}-rds"
+  }
 }
