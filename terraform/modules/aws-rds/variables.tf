@@ -4,6 +4,7 @@
 
 variable "name_prefix" {
   description = "RDS 구성 요소들의 이름과 tag을 선언하는데 사용될 prefix."
+  type        = string
 
   validation {
     condition     = length(var.name_prefix) <= 50
