@@ -1,6 +1,7 @@
 /*
   공통 사항
 */
+
 variable "name_prefix" {
   description = "RDS 구성 요소들의 이름과 tag을 선언하는데 사용될 prefix."
 
@@ -13,6 +14,7 @@ variable "name_prefix" {
 /*
   서브넷 그룹
 */
+
 variable "subnet_ids" {
   description = "RDS subnet group 생성 시 사용될 subnet id 목록. 필수적으로 2개 이상의 AZ를 포함"
   type        = set(string)
