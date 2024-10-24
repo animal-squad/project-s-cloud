@@ -78,6 +78,8 @@ resource "aws_ebs_volume" "ebs" {
 }
 
 resource "aws_volume_attachment" "ebs_att" {
+  count = var.ebs_size == null ? 0 : 1
+
   device_name = "/dev/sdh"
   volume_id   = aws_ebs_volume.ebs.id
   instance_id = aws_instance.ec2.id
