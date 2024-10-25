@@ -76,7 +76,7 @@ module "ec2-master" {
   instance_type = "t4g.small"
   ami           = local.ec2_ami
 
-  ingress_rules                 = []
+  ingress_rules                 = local.k8s_common_ingress_rule
   additional_security_group_ids = [aws_security_group.ec2_rds.id]
 
   key_name = aws_key_pair.key_pair.key_name
@@ -100,7 +100,7 @@ module "ec2-general-worker" {
   instance_type = "t4g.small"
   ami           = local.ec2_ami
 
-  ingress_rules                 = []
+  ingress_rules                 = local.k8s_common_ingress_rule
   additional_security_group_ids = [aws_security_group.ec2_rds.id]
 
   key_name = aws_key_pair.key_pair.key_name
@@ -123,7 +123,7 @@ module "ec2-vault-worker" {
   instance_type = "t4g.micro"
   ami           = local.ec2_ami
 
-  ingress_rules                 = []
+  ingress_rules                 = local.k8s_common_ingress_rule
   additional_security_group_ids = [aws_security_group.ec2_rds.id]
 
   key_name = aws_key_pair.key_pair.key_name
@@ -143,7 +143,7 @@ module "ec2-ci-cd-worker" {
   instance_type = "t4g.medium"
   ami           = local.ec2_ami
 
-  ingress_rules                 = []
+  ingress_rules                 = local.k8s_common_ingress_rule
   additional_security_group_ids = [aws_security_group.ec2_rds.id]
 
   key_name = aws_key_pair.key_pair.key_name
@@ -198,18 +198,7 @@ resource "aws_vpc_security_group_egress_rule" "egress" {
   }
 }
 
-resource "aws_vpc_security_group_ingress_rule" "ingress" {
-  security_group_id = aws_security_group.rds.id
 
-  from_port                    = local.rds_config.port
-  to_port                      = local.rds_config.port
-  ip_protocol                  = "tcp"
-  referenced_security_group_id = aws_security_group.ec2_rds.id
-
-  tags = {
-    Name = "${local.name}-ingress-rule"
-  }
-}
 
 module "rds" {
   source = "../modules/aws-rds"
