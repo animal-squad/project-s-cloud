@@ -24,11 +24,13 @@ variable "cidr_block" {
 variable "public_subnet_azs" {
   description = "public subnet을 생성할 az 항목들"
   type        = list(string)
+  default     = []
 }
 
 variable "private_subnet_azs" {
   description = "private subnet을 생성할 az 항목들"
   type        = list(string)
+  default     = []
 }
 
 variable "private_nat_subnet_azs" {
