@@ -160,7 +160,7 @@ resource "aws_security_group" "ec2_rds" {
   }
 }
 
-resource "aws_vpc_security_group_egress_rule" "egress" {
+resource "aws_vpc_security_group_egress_rule" "rds_egress" {
   security_group_id = aws_security_group.ec2_rds.id
   description       = "default egress rds"
 
