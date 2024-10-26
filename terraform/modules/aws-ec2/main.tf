@@ -49,16 +49,6 @@ resource "aws_instance" "ec2" {
   tags = {
     Name = "${var.name_prefix}-ec2"
   }
-
-  ebs_block_device {
-    device_name = "/dev/sdb"
-    volume_size = 30
-    volume_type = "gp3"
-
-    tags = {
-      Name = "${var.name_prefix}-ebs"
-    }
-  }
 }
 
 resource "aws_ebs_volume" "ebs" {
