@@ -17,8 +17,8 @@ locals {
   name = "animal-squad-test"
 
   azs = data.aws_availability_zones.available.names
-  //NOTE: ec2-m, ec2-g-w1, ec2-g-w2, ec2-v-w, ec2-cicd-w, rds 순서
-  public_subnet_azs = [local.azs[0], local.azs[0], local.azs[1], local.azs[1], local.azs[2], local.azs[1], local.azs[0]]
+  //NOTE: ec2-m, ec2-g-w1, ec2-g-w2, ec2-v-w, ec2-cicd-w, rds, rds 순서
+  public_subnet_azs = [local.azs[0], local.azs[0], local.azs[1], local.azs[1], local.azs[2], local.azs[1], local.azs[0], local.azs[1]]
   vpc_cidr          = "10.0.0.0/20" //NOTE: 계정 내에서 중복된 cidr를 선언하지 않았는지 확인 필요
 
   ec2_ami = "ami-096099377d8850a97"
@@ -205,7 +205,7 @@ module "rds" {
 
   name_prefix = local.name
 
-  subnet_ids = module.network.public_subnet_ids[6]
+  subnet_ids = slice(module.network.public_subnet_ids, 6, 8)
 
   allocated_storage     = 20
   max_allocated_storage = 1000
