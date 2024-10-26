@@ -22,7 +22,7 @@ resource "aws_db_instance" "rds" {
   backup_retention_period = var.backup_retention_period
   backup_target           = var.backup_target
 
-  availability_zone      = local.azs[1]
+  availability_zone      = var.availability_zone
   vpc_security_group_ids = var.subnet_ids
 
   db_subnet_group_name = aws_db_subnet_group.subnet_group.name

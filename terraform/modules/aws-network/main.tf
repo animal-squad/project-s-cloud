@@ -73,7 +73,7 @@ resource "aws_subnet" "private" {
   cidr_block        = cidrsubnet(aws_vpc.vpc.cidr_block, 4, local.private_cidir_start + each.value)
 
   tags = {
-    Name = "${var.name_prefix}-private-subnet-${count.index}"
+    Name = "${var.name_prefix}-private-subnet-${each.value}"
   }
 }
 
