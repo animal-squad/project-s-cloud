@@ -1,5 +1,5 @@
 resource "aws_security_group" "sg" {
-  name   = "${var.name_prefix}-sg"
+  name_prefix   = "${var.name_prefix}-sg"
   vpc_id = var.vpc_id
 
   tags = {

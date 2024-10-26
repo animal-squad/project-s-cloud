@@ -7,8 +7,8 @@ variable "name_prefix" {
   type        = string
 
   validation {
-    condition     = length(var.name_prefix) <= 20
-    error_message = "이름에 사용될 prefix는 20자를 넘을 수 없습니다."
+    condition     = length(var.name_prefix) <= 50
+    error_message = "이름에 사용될 prefix는 50자를 넘을 수 없습니다."
   }
 }
 
