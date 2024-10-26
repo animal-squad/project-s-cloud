@@ -47,7 +47,7 @@ resource "tls_private_key" "key_pair" {
 
 resource "aws_key_pair" "key_pair" {
   key_name   = local.name
-  public_key = tls_private_key.for_ec2.public_key_openssh
+  public_key = tls_private_key.key_pair.public_key_openssh
 }
 
 /*
