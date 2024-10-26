@@ -7,10 +7,14 @@
 
 # credentials
 *.pem
+aws-tflint-config
 
 # terraformrc file
 terraform.rc
 .terraformrc
 
-registry.terraform.io
 .DS_Store
+
+# .terraform
+/**/.terraform/modules
+/**/.terraform/**/registry.terraform.io
