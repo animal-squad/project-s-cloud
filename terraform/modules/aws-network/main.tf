@@ -7,7 +7,7 @@ resource "aws_vpc" "vpc" {
 }
 
 locals {
-  az_for_signle_nat = slice(var.private_nat_subnet_azs, 0, 1)
+  az_for_signle_nat = slice(var.private_nat_subnet_azs, 0, min(1, length(var.private_nat_subnet_azs)))
   az_for_multi_nat  = distinct(var.private_nat_subnet_azs)
   az_for_nat        = var.create_multi_nat ? local.az_for_multi_nat : local.az_for_signle_nat
 
