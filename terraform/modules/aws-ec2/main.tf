@@ -42,7 +42,7 @@ resource "aws_instance" "ec2" {
   availability_zone           = var.az
   subnet_id                   = var.subnet_id
   associate_public_ip_address = var.associate_public_ip_address
-  security_groups             = concat([aws_security_group.sg.id], var.additional_security_group_ids)
+  vpc_security_group_ids      = concat([aws_security_group.sg.id], var.additional_security_group_ids)
 
   key_name = var.key_name
 
