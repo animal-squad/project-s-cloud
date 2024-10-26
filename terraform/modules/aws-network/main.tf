@@ -29,14 +29,14 @@ resource "aws_internet_gateway" "ig" {
 }
 
 resource "aws_subnet" "public" {
-  count = length(var.public_subnet_azs)
+  for_each = { for idx, az in var.public_subnet_azs : idx => az }
 
   vpc_id            = aws_vpc.vpc.id
-  availability_zone = element(var.public_subnet_azs, count.index)
-  cidr_block        = cidrsubnet(aws_vpc.vpc.cidr_block, 4, count.index)
+  availability_zone = element(var.public_subnet_azs, each.key)
+  cidr_block        = cidrsubnet(aws_vpc.vpc.cidr_block, 4, each.key)
 
   tags = {
-    Name = "${var.name_prefix}-public-subnet-${count.index}"
+    Name = "${var.name_prefix}-public-subnet-${each.key}"
   }
 }
 
