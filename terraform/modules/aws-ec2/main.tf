@@ -1,6 +1,6 @@
 resource "aws_security_group" "sg" {
-  name_prefix   = "${var.name_prefix}-sg"
-  vpc_id = var.vpc_id
+  name_prefix = "${var.name_prefix}-sg"
+  vpc_id      = var.vpc_id
 
   tags = {
     Name = "${var.name_prefix}-sg"
@@ -81,6 +81,6 @@ resource "aws_volume_attachment" "ebs_att" {
   count = var.ebs_size == null ? 0 : 1
 
   device_name = "/dev/sdh"
-  volume_id   = aws_ebs_volume.ebs.id
+  volume_id   = aws_ebs_volume.ebs[0].id
   instance_id = aws_instance.ec2.id
 }
