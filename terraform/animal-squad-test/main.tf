@@ -1,7 +1,7 @@
 provider "aws" {
-  region = "ap-northeast-2"
-  # access_key = //TODO: 키 발급해야 함
-  # secret_key = //TODO: 키 발급해야 함
+  region     = "ap-northeast-2"
+  access_key = var.aws_access_key
+  secret_key = var.aws_secret_key
 
   default_tags {
     tags = {
@@ -55,7 +55,7 @@ resource "aws_key_pair" "key_pair" {
 */
 
 module "network" {
-  source = "../modules/aws-network"
+  source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-network"
 
   name_prefix       = local.name
   cidr_block        = local.vpc_cidr
@@ -63,7 +63,7 @@ module "network" {
 }
 
 module "ec2-master" {
-  source = "../modules/aws-ec2"
+  source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-ec2"
 
   name_prefix = "${local.name}-master"
 
@@ -87,7 +87,7 @@ module "ec2-master" {
 module "ec2-general-worker" {
   count = 2
 
-  source = "../modules/aws-ec2"
+  source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-ec2"
 
   name_prefix = "${local.name}-general-worker-${count.index}"
 
@@ -110,7 +110,7 @@ module "ec2-general-worker" {
 
 
 module "ec2-vault-worker" {
-  source = "../modules/aws-ec2"
+  source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-ec2"
 
   name_prefix = "${local.name}-vault-worker"
 
@@ -130,7 +130,7 @@ module "ec2-vault-worker" {
 }
 
 module "ec2-ci-cd-worker" {
-  source = "../modules/aws-ec2"
+  source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-ec2"
 
   name_prefix = "${local.name}-ci-cd-worker"
 
@@ -152,8 +152,8 @@ module "ec2-ci-cd-worker" {
 //FIXME: 보안 그룹 생성도 모듈화 할 필요 있어보임
 //NOTE: ec2와 rds를 연결할 때 사용할 보안 그룹
 resource "aws_security_group" "ec2_rds" {
-  name   = "${local.name}-ec2-rds-sg"
-  vpc_id = module.network.vpc_id
+  name_prefix = "${local.name}-ec2-rds-sg"
+  vpc_id      = module.network.vpc_id
 
   tags = {
     Name = "${local.name}-ec2-rds-sg"
@@ -176,8 +176,8 @@ resource "aws_vpc_security_group_egress_rule" "rds_egress" {
 
 //NOTE: rds에서 사용할 보안 그룹
 resource "aws_security_group" "rds" {
-  name   = "${local.name}-rds-sg"
-  vpc_id = module.network.vpc_id
+  name_prefix = "${local.name}-rds-sg"
+  vpc_id      = module.network.vpc_id
 
   tags = {
     Name = "${local.name}-rds-sg"
@@ -201,7 +201,7 @@ resource "aws_vpc_security_group_egress_rule" "egress" {
 
 
 module "rds" {
-  source = "../modules/aws-rds"
+  source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-rds"
 
   name_prefix = local.name
 
