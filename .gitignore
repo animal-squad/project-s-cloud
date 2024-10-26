@@ -1,0 +1,16 @@
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
+
+# credentials
+*.pem
+
+# terraformrc file
+terraform.rc
+.terraformrc
+
+registry.terraform.io
+.DS_Store
