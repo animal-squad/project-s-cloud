@@ -23,17 +23,7 @@ locals {
 
   ec2_ami = "ami-096099377d8850a97"
 
-  //XXX: db정보는 다른곳에서 받아와야 함
-  rds_config = {
-    engine         = "postgres"
-    engine_version = "14.13"
-
-    db_name  = "animalsquadtest"
-    username = "animalsquad"
-    password = "An1m@lsqu@d"
-    port     = "5432"
-  }
-
+  rds_port = "5432"
 }
 
 /*
@@ -165,8 +155,6 @@ resource "aws_vpc_security_group_egress_rule" "rds_egress" {
   description       = "default egress rds"
 
   cidr_ipv4   = "0.0.0.0/0"
-  from_port   = 0
-  to_port     = 0
   ip_protocol = "-1"
 
   tags = {
@@ -189,8 +177,6 @@ resource "aws_vpc_security_group_egress_rule" "egress" {
   description       = "default egress rds"
 
   cidr_ipv4   = "0.0.0.0/0"
-  from_port   = 0
-  to_port     = 0
   ip_protocol = "-1"
 
   tags = {
@@ -211,12 +197,12 @@ module "rds" {
   max_allocated_storage = 1000
   instance_class        = "db.t3.micro"
 
-  engine         = local.rds_config.engine
-  engine_version = local.rds_config.engine_version
-  db_name        = local.rds_config.db_name
-  username       = local.rds_config.username
-  password       = local.rds_config.password
-  port           = local.rds_config.port
+  engine         = "postgres"
+  engine_version = "14.13"
+  db_name        = var.db_name
+  username       = var.db_username
+  password       = var.db_password
+  port           = local.rds_port
 
   security_group_ids = [aws_security_group.rds.id]
 }

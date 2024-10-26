@@ -79,8 +79,8 @@ locals {
 resource "aws_vpc_security_group_ingress_rule" "rds_ingress" {
   security_group_id = aws_security_group.rds.id
 
-  from_port                    = local.rds_config.port
-  to_port                      = local.rds_config.port
+  from_port                    = local.rds_port
+  to_port                      = local.rds_port
   ip_protocol                  = "tcp"
   referenced_security_group_id = aws_security_group.ec2_rds.id
 
