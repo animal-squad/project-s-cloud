@@ -5,21 +5,21 @@ locals {
       from_port   = 22
       to_port     = 22
       ip_protocol = "tcp"
-      cidr_ipv4   = local.vpc_cidr
+      cidr_ipv4   = "0.0.0.0/0"
     },
     {
       //NOTE: HTTP
       from_port   = 80
       to_port     = 80
       ip_protocol = "tcp"
-      cidr_ipv4   = local.vpc_cidr
+      cidr_ipv4   = "0.0.0.0/0"
     },
     {
       //NOTE: HTTPS
       from_port   = 443
       to_port     = 443
       ip_protocol = "tcp"
-      cidr_ipv4   = local.vpc_cidr
+      cidr_ipv4   = "0.0.0.0/0"
     },
     /*
       Kubernates
@@ -33,8 +33,8 @@ locals {
     },
     {
       //NOTE: ETCP(write, read)
-      from_port   = 2380
-      to_port     = 2379
+      from_port   = 2379
+      to_port     = 2380
       ip_protocol = "tcp"
       cidr_ipv4   = local.vpc_cidr
     },
