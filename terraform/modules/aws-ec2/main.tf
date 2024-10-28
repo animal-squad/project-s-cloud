@@ -80,8 +80,8 @@ resource "aws_volume_attachment" "ebs_att" {
 // NOTE: Instance Role
 
 resource "aws_iam_instance_profile" "profile" {
-  for_each = var.role_name == null ? toset([]) : toset([var.role_name])
+  for_each = var.role_name != null ? { "profile" = var.role_name } : {}
 
   name = "${var.name_prefix}_profile"
-  role = each.key
+  role = each.value
 }
