@@ -1,0 +1,33 @@
+#vault-volume.yaml
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: vault-pv-volume
+  labels:
+    type: nfs
+spec:
+  storageClassName: nfs-storage # name 통일
+  claimRef:
+    name: vault-pv-claim
+    namespace: vault
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /nfs_shared/vault
+    server: {{ private_ip }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: vault-pv-claim
+  namespace: vault
+spec:
+  storageClassName: nfs-storage # name 통일
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi
