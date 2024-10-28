@@ -1,6 +1,10 @@
-sean-vault.txt
-*.tfstate
-vault-cluster-vault-keys.json
+#ansible files
+./ansible/ansible.cfg
+./ansible/hosts.ini
+./ansible/*.pem
+./ansible/*.tfstate
+./ansible/secret_path_file.yml
+./ansible/gen_hosts.sh
 
 # .tfstate files
 *.tfstate
