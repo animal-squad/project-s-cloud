@@ -2,7 +2,9 @@
 ./ansible/ansible.cfg
 ./ansible/hosts.ini
 ./ansible/*.pem
-*.tfstate
+./ansible/*.tfstate
+./ansible/secret_path_file.yml
+./ansible/gen_hosts.sh
 
 # .tfstate files
 *.tfstate
