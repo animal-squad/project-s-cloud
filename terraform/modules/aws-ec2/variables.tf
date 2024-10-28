@@ -83,6 +83,12 @@ variable "ebs_size" {
   default     = null
 }
 
+variable "user_data" {
+  description = "EC2에서 최초 생성 시 실행될 스크립트"
+  type        = string
+  default     = null
+}
+
 /*
   IAM Role
 */

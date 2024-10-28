@@ -1,0 +1,59 @@
+# vault-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vault
+  namespace: vault
+spec:
+  serviceName: "vault"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vault
+  template:
+    metadata:
+      name: vault-pod
+      labels:
+        app: vault
+    spec:
+      serviceAccountName: vault
+      initContainers:
+        - name: init-config # 초기화 용도
+          image: busybox
+          command: ['sh', '-c', 'cp /tmp/vault-config/* /vault/config/' ]
+          volumeMounts:
+            - name: config-tmp
+              mountPath: /tmp/vault-config
+            - name: config
+              mountPath: /vault/config
+      containers:
+        - name: vault-container
+          image: vault:1.13.3
+          command:
+            - "vault"
+            - "server"
+            - "-config=/vault/config/vault.hcl"
+          ports:
+            - containerPort: 8200
+              name: vault-port
+          volumeMounts:
+            - name: config
+              mountPath: /vault/config
+            - name: data
+              mountPath: /vault/data
+          securityContext:
+            capabilities:
+              add:
+                - IPC_LOCK # Memory Swap 방지 권한부여
+      volumes:
+        - name: config-tmp
+          configMap:
+            name: vault-config
+            items:
+              - key: vault.hcl
+                path: vault.hcl
+        - name: config
+          emptyDir: {}
+        - name: data
+          persistentVolumeClaim:
+            claimName: vault-pv-claim

@@ -1,0 +1,26 @@
+- hosts: all # origin all
+  become: yes
+  vars_files:
+    - secret_file_path.yml
+  vars:
+    ansible_ssh_private_key_file: "{{ private_key_file }}"
+  tasks:
+    - name: Include Setting up configuration before install Kube
+      include_tasks: roles/config/tasks/setting_config.yml
+
+    - name: Include install_kube_pkg tasks
+      include_tasks: roles/kubernetes/tasks/kubeadm_install.yml
+
+- hosts: masters
+  become: yes
+  gather_facts: false
+  vars_files:
+    - secret_file_path.yml
+  vars:
+    ansible_ssh_private_key_file: "{{ private_key_file }}"
+  tasks:
+    - name: Include master_config tasks and CNI install
+      include_tasks: roles/kubernetes/tasks/master_config.yml
+
+    - name: Include worker_cfg tasks
+      include_tasks: roles/kubernetes/tasks/worker_config.yml

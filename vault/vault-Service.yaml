@@ -1,0 +1,16 @@
+# vault-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: vault
+  namespace: vault
+spec:
+  ports:
+    - port: 8200
+      targetPort: vault-port
+      protocol: TCP
+      name: vault
+      nodePort: {{ port Num }}
+  selector:
+    app: vault
+  type: NodePort

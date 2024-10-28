@@ -1,0 +1,8 @@
+- name: Get join command
+  ansible.builtin.shell: kubeadm token create --print-join-command
+  register: join_command_raw
+
+- name: Join command to hostvars
+  ansible.builtin.shell: "{{ join_command_raw.stdout }} "
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['workers'] }}"

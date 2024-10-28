@@ -65,6 +65,10 @@ module "ec2-master" {
 
   instance_type = "t4g.small"
   ami           = local.ec2_ami
+  user_data     = <<-EOF
+                  #!/bin/bash
+                  hostnamectl set-hostname master
+                  EOF
 
   ingress_rules                 = local.k8s_common_ingress_rule
   additional_security_group_ids = [aws_security_group.ec2_rds.id]
@@ -74,12 +78,12 @@ module "ec2-master" {
   ebs_size = 30
 }
 
-module "ec2-general-worker" {
+module "ec2-service-worker" {
   count = 2
 
   source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-ec2"
 
-  name_prefix = "${local.name}-general-worker-${count.index}"
+  name_prefix = "${local.name}-service-worker-${count.index}"
 
   vpc_id    = module.network.vpc_id
   az        = local.public_subnet_azs[1 + count.index]
@@ -87,9 +91,12 @@ module "ec2-general-worker" {
 
   associate_public_ip_address = true
 
-  instance_type = "t4g.small"
-  ami           = local.ec2_ami
-
+  instance_type                 = "t4g.small"
+  ami                           = local.ec2_ami
+  user_data                     = <<-EOF
+                  #!/bin/bash
+                  hostnamectl set-hostname worker${count.index + 1}
+                  EOF
   ingress_rules                 = local.k8s_common_ingress_rule
   additional_security_group_ids = [aws_security_group.ec2_rds.id]
 
@@ -113,6 +120,10 @@ module "ec2-vault-worker" {
   instance_type = "t4g.micro"
   ami           = local.ec2_ami
 
+  user_data                     = <<-EOF
+                  #!/bin/bash
+                  hostnamectl set-hostname vault-worker
+                  EOF
   ingress_rules                 = local.k8s_common_ingress_rule
   additional_security_group_ids = [aws_security_group.ec2_rds.id]
 
@@ -130,9 +141,12 @@ module "ec2-ci-cd-worker" {
 
   associate_public_ip_address = true
 
-  instance_type = "t4g.medium"
-  ami           = local.ec2_ami
-
+  instance_type                 = "t4g.medium"
+  ami                           = local.ec2_ami
+  user_data                     = <<-EOF
+                  #!/bin/bash
+                  hostnamectl set-hostname devops-worker
+                  EOF
   ingress_rules                 = local.k8s_common_ingress_rule
   additional_security_group_ids = [aws_security_group.ec2_rds.id]
 

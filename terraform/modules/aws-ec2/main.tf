@@ -48,6 +48,7 @@ resource "aws_instance" "ec2" {
 
 
   iam_instance_profile = var.role_name == null ? null : aws_iam_instance_profile.profile.name
+  user_data = var.user_data
 
   tags = {
     Name = "${var.name_prefix}-ec2"
