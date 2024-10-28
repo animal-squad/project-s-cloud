@@ -46,6 +46,9 @@ resource "aws_instance" "ec2" {
 
   key_name = var.key_name
 
+
+  iam_instance_profile = var.role_name == null ? null : aws_iam_instance_profile.profile.name
+
   tags = {
     Name = "${var.name_prefix}-ec2"
   }
@@ -71,4 +74,13 @@ resource "aws_volume_attachment" "ebs_att" {
   device_name = "/dev/sdh"
   volume_id   = aws_ebs_volume.ebs[0].id
   instance_id = aws_instance.ec2.id
+}
+
+// NOTE: Instance Role
+
+resource "aws_iam_instance_profile" "profile" {
+  count = var.role_name == null ? 0 : 1
+
+  name = "${var.name_prefix}_profile"
+  role = var.role_name
 }

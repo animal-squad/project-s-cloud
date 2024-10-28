@@ -82,3 +82,13 @@ variable "ebs_size" {
   type        = number
   default     = null
 }
+
+/*
+  IAM Role
+*/
+
+variable "role_name" {
+  description = "EC2 Instance에 부여 할 Role name"
+  type        = string
+  default     = null
+}
