@@ -1,0 +1,41 @@
+# swapoff -a to disable swapping
+- name: disable swap
+  ansible.builtin.shell: "swapoff -a"
+
+# sed to comment the swap partition in /etc/fstab
+- name: Sed to comment the swap partition in /etc/fstab
+  ansible.builtin.shell: "sed -i.bak -r 's/(.+ swap .+)/#\\1/' /etc/fstab"
+
+- name: Create containerd.conf for kernel modules
+  copy:
+    dest: /etc/modules-load.d/containerd.conf
+    content: |
+      overlay
+      br_netfilter
+
+- name: Load overlay module
+  ansible.builtin.shell: "modprobe overlay"
+
+- name: Load br_netfilter module
+  ansible.builtin.shell: "modprobe br_netfilter"
+
+# 네트워크 설정
+- name: Configure iptables settings for Kubernetes
+  ansible.builtin.copy:
+    dest: /etc/sysctl.d/kubernetes.conf
+    content: |
+      net.bridge.bridge-nf-call-ip6tables = 1
+      net.bridge.bridge-nf-call-iptables = 1
+      net.ipv4.ip_forward = 1
+
+- name: Apply sysctl settings
+  ansible.builtin.shell: "sysctl --system"
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Upgrade all packages
+  apt:
+    upgrade: yes
+    update_cache: yes
