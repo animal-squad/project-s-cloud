@@ -9,6 +9,16 @@ resource "aws_s3_bucket" "s3" {
   }
 }
 
+resource "aws_s3_bucket_versioning" "versioning_example" {
+  bucket = aws_s3_bucket.s3.id
+
+  versioning_configuration {
+    status = var.versioning
+  }
+}
+
+
+//NOTE: 버킷 소유권 설정
 resource "aws_s3_bucket_ownership_controls" "s3_ownershipt" {
   bucket = aws_s3_bucket.s3.id
 
@@ -17,6 +27,7 @@ resource "aws_s3_bucket_ownership_controls" "s3_ownershipt" {
   }
 }
 
+//NOTE: 버킷 접근 제한 관련 설정
 resource "aws_s3_bucket_public_access_block" "public_access_block" {
   bucket = aws_s3_bucket.s3.id
 
@@ -34,12 +45,4 @@ resource "aws_s3_bucket_acl" "example" {
     aws_s3_bucket_ownership_controls.s3_ownershipt,
     aws_s3_bucket_public_access_block.public_access_block,
   ]
-}
-
-resource "aws_s3_bucket_versioning" "versioning_example" {
-  bucket = aws_s3_bucket.s3.id
-
-  versioning_configuration {
-    status = var.versioning
-  }
 }
