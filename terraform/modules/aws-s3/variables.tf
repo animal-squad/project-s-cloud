@@ -75,3 +75,14 @@ variable "acl" {
   type        = string
   default     = "private"
 }
+
+
+/*
+  접근 권한 설정
+*/
+
+variable "bucket_policy" {
+  description = "bucket 정책"
+  type        = string
+  default     = null
+}

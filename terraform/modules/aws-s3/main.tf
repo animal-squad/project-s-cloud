@@ -46,3 +46,10 @@ resource "aws_s3_bucket_acl" "example" {
     aws_s3_bucket_public_access_block.public_access_block,
   ]
 }
+
+//NOTE: 버킷 정책
+
+resource "aws_s3_bucket_policy" "allow_access_from_another_account" {
+  bucket = aws_s3_bucket.s3.id
+  policy = var.bucket_policy
+}
