@@ -73,16 +73,16 @@ resource "aws_iam_policy" "s3_read_write_policy" {
   name        = "Terraform_AllowEC2ReadWriteS3_${local.name}"
   description = "Allow ec2 to Read & Write to the Animal Squad test S3 bucket"
   policy = jsonencode({
-    "Version" : "2012-10-17",
-    "Statement" : [
+    "Version" = "2012-10-17",
+    "Statement" = [
       {
-        "Effect" : "Allow",
-        "Action" : [
+        "Effect" = "Allow",
+        "Action" = [
           "s3:GetObject",
           "s3:PutObject"
         ],
-        "Resource" : [
-          "${aws_s3_bucket.s3.arn}",
+        "Resource" = [
+          aws_s3_bucket.s3.arn,
           "${aws_s3_bucket.s3.arn}/*"
         ]
       }
