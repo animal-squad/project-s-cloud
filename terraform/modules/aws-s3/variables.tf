@@ -62,12 +62,13 @@ variable "public_access_block" {
     ignore_public_acls      = bool
     restrict_public_buckets = bool
   })
-  default = object({
+
+  default = {
     block_public_acls       = true
     block_public_policy     = true
     ignore_public_acls      = true
     restrict_public_buckets = true
-  })
+  }
 }
 
 variable "acl" {
