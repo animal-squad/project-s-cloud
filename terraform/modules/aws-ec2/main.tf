@@ -47,7 +47,7 @@ resource "aws_instance" "ec2" {
   key_name = var.key_name
 
 
-  iam_instance_profile = var.role_name == null ? null : aws_iam_instance_profile.profile.name
+  iam_instance_profile = var.role_name == null ? null : aws_iam_instance_profile[0].profile.name
   user_data = var.user_data
 
   tags = {
