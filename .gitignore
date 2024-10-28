@@ -1,3 +1,24 @@
 sean-vault.txt
 *.tfstate
 vault-cluster-vault-keys.json
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
+
+# credentials
+*.pem
+aws-tflint-config
+
+# terraformrc file
+terraform.rc
+.terraformrc
+
+.DS_Store
+
+# .terraform
+/**/.terraform/modules
+/**/.terraform/**/registry.terraform.io
