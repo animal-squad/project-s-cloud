@@ -41,6 +41,19 @@ resource "aws_key_pair" "key_pair" {
 }
 
 /*
+  S3
+*/
+
+module "frontend_s3" {
+  source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-s3"
+
+  name_prefix = local.name
+
+  object_lock_enabled = true
+  versioning          = "Enabled"
+}
+
+/*
   네트워크 자원
 */
 
@@ -50,6 +63,42 @@ module "network" {
   name_prefix       = local.name
   cidr_block        = local.vpc_cidr
   public_subnet_azs = local.public_subnet_azs
+}
+
+/*
+  인스턴스(EC2) 관련 자원
+*/
+
+resource "aws_iam_policy" "s3_read_write_policy" {
+  name        = "Terraform_AllowEC2ReadWriteS3_${local.name}"
+  description = "Allow ec2 to Read & Write to the Animal Squad test S3 bucket"
+  policy = jsonencode({
+    "Version" = "2012-10-17",
+    "Statement" = [
+      {
+        "Effect" = "Allow",
+        "Action" = [
+          "s3:GetObject",
+          "s3:PutObject"
+        ],
+        "Resource" = [
+          aws_s3_bucket.s3.arn,
+          "${aws_s3_bucket.s3.arn}/*"
+        ]
+      }
+    ]
+  })
+}
+
+module "ec2_role" {
+  source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-iam-role"
+
+  name_prefix = local.name
+
+  principal_type       = "Service"
+  principal_identifier = "ec2.amazonaws.com"
+
+  iam_policy_arn = aws_iam_policy.s3_read_write_policy.arn
 }
 
 module "ec2-master" {
@@ -65,7 +114,9 @@ module "ec2-master" {
 
   instance_type = "t4g.small"
   ami           = local.ec2_ami
-  user_data     = <<-EOF
+
+  role_name = module.ec2_role.role_name
+  user_data = <<-EOF
                   #!/bin/bash
                   hostnamectl set-hostname master
                   EOF
@@ -91,8 +142,10 @@ module "ec2-service-worker" {
 
   associate_public_ip_address = true
 
-  instance_type                 = "t4g.small"
-  ami                           = local.ec2_ami
+  instance_type = "t4g.small"
+  ami           = local.ec2_ami
+
+  role_name                     = module.ec2_role.role_name
   user_data                     = <<-EOF
                   #!/bin/bash
                   hostnamectl set-hostname worker${count.index + 1}
@@ -120,6 +173,7 @@ module "ec2-vault-worker" {
   instance_type = "t4g.micro"
   ami           = local.ec2_ami
 
+  role_name = module.ec2_role.role_name
   user_data                     = <<-EOF
                   #!/bin/bash
                   hostnamectl set-hostname vault-worker
@@ -143,6 +197,8 @@ module "ec2-ci-cd-worker" {
 
   instance_type                 = "t4g.medium"
   ami                           = local.ec2_ami
+
+  role_name = module.ec2_role.role_name
   user_data                     = <<-EOF
                   #!/bin/bash
                   hostnamectl set-hostname devops-worker
@@ -152,6 +208,10 @@ module "ec2-ci-cd-worker" {
 
   key_name = aws_key_pair.key_pair.key_name
 }
+
+/*
+  DB 관련 자원
+*/
 
 //FIXME: 보안 그룹 생성도 모듈화 할 필요 있어보임
 //NOTE: ec2와 rds를 연결할 때 사용할 보안 그룹
@@ -197,7 +257,6 @@ resource "aws_vpc_security_group_egress_rule" "egress" {
     Name = "${local.name}-egress-rule"
   }
 }
-
 
 
 module "rds" {

@@ -88,3 +88,24 @@ variable "user_data" {
   type        = string
   default     = null
 }
+
+/*
+  IAM Role
+*/
+
+variable "assign_role_to_ec2" {
+  description = "EC2 Instance에 Role을 부여할것인지 여부"
+  type        = bool
+  default     = false
+}
+
+variable "role_name" {
+  description = "EC2 Instance에 부여 할 Role name"
+  type        = string
+  default     = null
+
+  validation {
+    condition     = !(var.assign_role_to_ec2 && var.role_name == null)
+    error_message = "assign_role_to_ec2가 true일 경우 role_name을 지정해야 합니다."
+  }
+}
