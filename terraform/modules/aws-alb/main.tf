@@ -212,8 +212,6 @@ resource "aws_lb_target_group" "target_groups" {
   name = each.key
   port = each.value.port
 
-  preserve_client_ip = true
-
   protocol         = "HTTP"
   protocol_version = "HTTP2"
 
