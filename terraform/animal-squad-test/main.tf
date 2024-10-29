@@ -82,8 +82,8 @@ resource "aws_iam_policy" "s3_read_write_policy" {
           "s3:PutObject"
         ],
         "Resource" = [
-          aws_s3_bucket.s3.arn,
-          "${aws_s3_bucket.s3.arn}/*"
+          module.frontend_s3.bucket_arn,
+          "${module.frontend_s3.bucket_arn}/*"
         ]
       }
     ]
@@ -93,7 +93,7 @@ resource "aws_iam_policy" "s3_read_write_policy" {
 module "ec2_role" {
   source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-iam-role"
 
-  name_prefix = local.name
+  name_prefix = "Terraform_ForAllEc2_${local.name}"
 
   principal_type       = "Service"
   principal_identifier = "ec2.amazonaws.com"
@@ -115,8 +115,9 @@ module "ec2-master" {
   instance_type = "t4g.small"
   ami           = local.ec2_ami
 
-  role_name = module.ec2_role.role_name
-  user_data = <<-EOF
+  role_name          = module.ec2_role.role_name
+  assign_role_to_ec2 = true
+  user_data          = <<-EOF
                   #!/bin/bash
                   hostnamectl set-hostname master
                   EOF
@@ -146,6 +147,7 @@ module "ec2-service-worker" {
   ami           = local.ec2_ami
 
   role_name                     = module.ec2_role.role_name
+  assign_role_to_ec2            = true
   user_data                     = <<-EOF
                   #!/bin/bash
                   hostnamectl set-hostname worker${count.index + 1}
@@ -173,7 +175,8 @@ module "ec2-vault-worker" {
   instance_type = "t4g.micro"
   ami           = local.ec2_ami
 
-  role_name = module.ec2_role.role_name
+  role_name                     = module.ec2_role.role_name
+  assign_role_to_ec2            = true
   user_data                     = <<-EOF
                   #!/bin/bash
                   hostnamectl set-hostname vault-worker
@@ -195,10 +198,11 @@ module "ec2-ci-cd-worker" {
 
   associate_public_ip_address = true
 
-  instance_type                 = "t4g.medium"
-  ami                           = local.ec2_ami
+  instance_type = "t4g.medium"
+  ami           = local.ec2_ami
 
-  role_name = module.ec2_role.role_name
+  role_name                     = module.ec2_role.role_name
+  assign_role_to_ec2            = true
   user_data                     = <<-EOF
                   #!/bin/bash
                   hostnamectl set-hostname devops-worker
