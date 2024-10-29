@@ -226,7 +226,7 @@ resource "aws_lb_target_group" "target_groups" {
 
 resource "aws_lb_target_group_attachment" "target" {
   for_each = {
-    for instance in local.flat_target : "${instance.rule_name}-${instance.id}" => instance
+    for idx, instance in local.flat_target : "${instance.rule_name}-${idx}" => instance
   }
 
   target_group_arn = aws_lb_target_group.target_groups[each.value.rule_name].arn
