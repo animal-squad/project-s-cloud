@@ -79,7 +79,7 @@ resource "aws_vpc_security_group_ingress_rule" "https" {
 */
 
 resource "aws_lb" "alb" {
-  name        = var.name
+  name               = var.name
   load_balancer_type = "application"
 
   subnets         = var.subnet_ids
@@ -131,7 +131,7 @@ resource "aws_lb_listener" "https" {
         for_each = aws_lb_target_group.default_target_group
 
         content {
-          arn = each.value.arn
+          arn = target_group.value.arn
         }
       }
     }
