@@ -24,11 +24,11 @@ locals {
 */
 
 resource "aws_security_group" "sg" {
-  name_prefix = "${var.name_prefix}-sg"
+  name_prefix = "${var.name}-sg"
   vpc_id      = var.vpc_id
 
   tags = {
-    Name = "${var.name_prefix}-sg"
+    Name = "${var.name}-sg"
   }
 }
 
@@ -40,7 +40,7 @@ resource "aws_vpc_security_group_egress_rule" "egress" {
   ip_protocol = "-1"
 
   tags = {
-    Name = "${var.name_prefix}-egress-rule"
+    Name = "${var.name}-egress-rule"
   }
 }
 
@@ -55,7 +55,7 @@ resource "aws_vpc_security_group_ingress_rule" "http" {
   description = "http ingress rule"
 
   tags = {
-    Name = "${var.name_prefix}-http-ingress-rule"
+    Name = "${var.name}-http-ingress-rule"
   }
 }
 
@@ -70,7 +70,7 @@ resource "aws_vpc_security_group_ingress_rule" "https" {
   description = "https ingress rule"
 
   tags = {
-    Name = "${var.name_prefix}-https-ingress-rule"
+    Name = "${var.name}-https-ingress-rule"
   }
 }
 
@@ -79,7 +79,7 @@ resource "aws_vpc_security_group_ingress_rule" "https" {
 */
 
 resource "aws_lb" "alb" {
-  name_prefix        = var.name_prefix
+  name        = var.name
   load_balancer_type = "application"
 
   subnets         = var.subnet_ids
@@ -160,7 +160,7 @@ resource "aws_lb_target_group" "default_target_group" {
   vpc_id = var.vpc_id
 
   tags = {
-    Name = "${var.name_prefix}-default-tg-${each.key}"
+    Name = "${var.name}-default-tg-${each.key}"
   }
 }
 
@@ -224,7 +224,7 @@ resource "aws_lb_target_group" "target_groups" {
   vpc_id = var.vpc_id
 
   tags = {
-    Name = "${var.name_prefix}-tg-${each.key}"
+    Name = "${var.name}-tg-${each.key}"
   }
 }
 

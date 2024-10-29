@@ -2,13 +2,13 @@
   공통 사항
 */
 
-variable "name_prefix" {
-  description = "ALB 구성 요소들의 이름과 tag을 선언하는데 사용될 prefix."
+variable "name" {
+  description = "ALB 구성 요소들의 이름과 tag을 선언하는데 사용될 이름."
   type        = string
 
   validation {
-    condition     = length(var.name_prefix) <= 50
-    error_message = "이름에 사용될 prefix는 50자를 넘을 수 없습니다."
+    condition     = length(var.name) <= 32
+    error_message = "이름은 32자를 넘을 수 없습니다."
   }
 }
 
