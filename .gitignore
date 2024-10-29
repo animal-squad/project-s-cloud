@@ -6,6 +6,9 @@ ansible/secret_path_file.yml
 ansible/gen_hosts.sh
 
 
+#vault files
+vault/*.json
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
