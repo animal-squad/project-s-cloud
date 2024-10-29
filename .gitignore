@@ -1,11 +1,11 @@
 #ansible files
-./ansible/ansible.cfg
-./ansible/hosts.ini
-./ansible/*.pem
-./ansible/*.tfstate
-./ansible/secret_path_file.yml
-./ansible/gen_hosts.sh
-*.pem
+ansible/ansible.cfg
+ansible/hosts.ini
+ansible/*.tfstate
+ansible/secret_path_file.yml
+ansible/gen_hosts.sh
+
+
 # .tfstate files
 *.tfstate
 *.tfstate.*
