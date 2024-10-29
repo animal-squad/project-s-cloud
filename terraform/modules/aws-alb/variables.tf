@@ -69,8 +69,8 @@ variable "default_target_groups" {
 variable "listener_rule" {
   description = "추가로 연결 할 리스너 설정. priority는 1부터 50,000 사이의 값이며 중복이 있으면 안된다."
   type = map(object({
-    path              = [string]
-    host              = [string]
+    path              = list(string)
+    host              = list(string)
     priority          = number
     health_check_path = optional(string)
     port              = number
