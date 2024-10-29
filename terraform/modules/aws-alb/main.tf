@@ -9,11 +9,11 @@ locals {
     ]
   ])
   flat_target = flatten([
-    for tg_name, tg_data in var.listener_rule : [
+    for rule_name, rule_data in var.listener_rule : [
       for instance in rule_data.target : {
-        rule_index = idx
-        id         = instance.id
-        port       = instance.port
+        rule_name = rule_name
+        id        = instance.id
+        port      = instance.port
       }
     ]
   ])
@@ -230,10 +230,10 @@ resource "aws_lb_target_group" "target_groups" {
 
 resource "aws_lb_target_group_attachment" "target" {
   for_each = {
-    for instance in local.flat_target : "${instance.rule_index}-${instance.id}" => instance
+    for instance in local.flat_target : "${instance.rule_name}-${instance.id}" => instance
   }
 
-  target_group_arn = aws_lb_target_group.target_groups[each.value.rule_index].arn
+  target_group_arn = aws_lb_target_group.target_groups[each.value.rule_name].arn
   target_id        = each.value.id
   port             = each.value.port
 }
