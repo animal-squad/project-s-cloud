@@ -147,8 +147,8 @@ resource "aws_lb_target_group" "default_target_group" {
 
   load_balancing_cross_zone_enabled = "use_load_balancer_configuration"
 
-  name_prefix = "${var.name_prefix}-default-tg-${each.key}"
-  port        = each.value.port
+  name = each.key
+  port = each.value.port
 
   preserve_client_ip = true
 
@@ -211,8 +211,8 @@ resource "aws_lb_target_group" "target_groups" {
 
   load_balancing_cross_zone_enabled = "use_load_balancer_configuration"
 
-  name_prefix = "${var.name_prefix}-tg-${each.key}"
-  port        = each.value.port
+  name = each.key
+  port = each.value.port
 
   preserve_client_ip = true
 

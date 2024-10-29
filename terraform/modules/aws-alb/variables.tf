@@ -53,7 +53,7 @@ variable "certificate_arn" {
 */
 
 variable "default_target_groups" {
-  description = "default로 연결 할 target group 리스트"
+  description = "default로 연결 할 target group 리스트. key 값은 32자 이하, 영어와 hyphen만 가능"
   type = map(object({
     health_check_path = optional(string)
     port              = number
@@ -67,7 +67,7 @@ variable "default_target_groups" {
 }
 
 variable "listener_rule" {
-  description = "추가로 연결 할 리스너 설정. priority는 1부터 50,000 사이의 값이며 중복이 있으면 안된다."
+  description = "추가로 연결 할 리스너 설정. priority는 1부터 50,000 사이의 값이며 중복이 있으면 안된다. key 값은 32자 이하, 영어와 hyphen만 가능"
   type = map(object({
     path              = list(string)
     host              = list(string)
