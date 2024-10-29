@@ -83,7 +83,7 @@ resource "aws_lb" "alb" {
   load_balancer_type = "application"
 
   subnets         = var.subnet_ids
-  security_groups = [aws_security_group.alb.id]
+  security_groups = [aws_security_group.sg.id]
 
   client_keep_alive = 3600 // Default
   idle_timeout      = var.idle_timeout
