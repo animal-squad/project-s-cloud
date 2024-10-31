@@ -17,13 +17,16 @@ locals {
   name = "animal-squad-test"
 
   azs = data.aws_availability_zones.available.names
-  //NOTE: ec2-m, ec2-g-w1, ec2-g-w2, ec2-v-w, ec2-cicd-w, rds, rds 순서
-  public_subnet_azs = [local.azs[0], local.azs[0], local.azs[1], local.azs[1], local.azs[2], local.azs[1], local.azs[0], local.azs[1]]
+  //NOTE: ec2-m, ec2-g-w1, ec2-g-w2, ec2-v-w, ec2-cicd-w, rds, rds, alb, alb, alb 순서
+  //XXX: subnet 개수가 계획한것보다 더 많음
+  public_subnet_azs = [local.azs[0], local.azs[0], local.azs[1], local.azs[1], local.azs[2], local.azs[1], local.azs[0], local.azs[1], local.azs[0], local.azs[1], local.azs[2]]
   vpc_cidr          = "10.0.0.0/20" //NOTE: 계정 내에서 중복된 cidr를 선언하지 않았는지 확인 필요
 
   ec2_ami = "ami-096099377d8850a97"
 
   rds_port = "5432"
+
+  link_bucket_acm = "arn:aws:acm:ap-northeast-2:537124933041:certificate/00ec5649-06bd-41bf-8ffd-8bdf99a99677"
 }
 
 /*
@@ -268,6 +271,7 @@ module "rds" {
 
   name_prefix = local.name
 
+  //XXX: subnet 개수와 싱크가 맞지 않음
   subnet_ids = slice(module.network.public_subnet_ids, 6, 8)
 
   allocated_storage     = 20
@@ -282,4 +286,42 @@ module "rds" {
   port           = local.rds_port
 
   security_group_ids = [aws_security_group.rds.id]
+}
+
+/*
+  ALB
+*/
+
+module "alb" {
+  source = "github.com/animal-squad/project-s-cloud/terraform/modules/aws-alb"
+
+  name = local.name
+
+  vpc_id          = module.network.vpc_id
+  subnet_ids      = slice(module.network.public_subnet_ids, 8, 11)
+  certificate_arn = local.link_bucket_acm
+
+  default_target_groups = {
+    "master-nodes" = {
+      port = 80
+      target = [
+        { id = module.ec2-master.instance_id, port = 80 },
+      ]
+    }
+  }
+
+  listener_rule = {
+    "vault-node" = {
+      host     = ["vault.link-bucket.animal-squad.uk"]
+      path     = ["*"]
+      priority = 1
+
+      port = 80
+
+      health_check_path = "/v1/sys/health"
+      target = [
+        { id = module.ec2-vault-worker.instance_id, port = 30003 }
+      ]
+    }
+  }
 }
