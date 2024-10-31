@@ -1,0 +1,9 @@
+#backend/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backend-config
+  namespace: service
+data:
+  DATABASE_URL: "postgres://DB_USERNAME:DB_PASSWORD@DB_HOST:PORT/DATABASENAME"
+  URL: "www.link-bucket.animal-squad.uk"

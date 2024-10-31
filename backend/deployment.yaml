@@ -1,0 +1,87 @@
+#backend/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      nodeSelector:
+        role: service
+      initContainers: # only init Prisma initializing
+        - name: init-container
+          image: ghcr.io/animal-squad/project-s-be:oauth.test.v2
+          ports:
+            - containerPort: 3000
+          command: ["npx", "prisma", "db", "push"]
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: DATABASE_URL
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: GOOGLE_CLIENT_SECRET
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: SESSION_SECRET
+            - name: URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: URL
+      containers:
+        - name: backend-container
+          image: ghcr.io/animal-squad/project-s-be:oauth.test.v2
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: DATABASE_URL
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: GOOGLE_CLIENT_SECRET
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: SESSION_SECRET
+            - name: URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: URL
+          command: ["pnpm", "start"]
+          resources:
+            requests:
+              ephemeral-storage: "500Mi" # 최소 2GiB 보장
+            limits:
+              ephemeral-storage: "2Gi" # 최대 4GiB 사용 가능
