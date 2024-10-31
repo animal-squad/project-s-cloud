@@ -151,7 +151,6 @@ resource "aws_lb_target_group" "default_target_group" {
   port = each.value.port
 
   protocol         = "HTTP"
-  protocol_version = "HTTP2"
 
   target_type = "instance"
 
