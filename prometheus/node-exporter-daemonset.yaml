@@ -1,0 +1,42 @@
+#node-exporter-daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: node-exporter
+  namespace: prometheus-server
+  labels:
+    app: node-exporter
+spec:
+  selector:
+    matchLabels:
+      app: node-exporter
+  template:
+    metadata:
+      labels:
+        app: node-exporter
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane
+          operator: Exists
+          effect: NoSchedule
+      hostNetwork: true
+      hostPID: true
+      hostIPC: true
+      containers:
+        - name: node-exporter
+          image: prom/node-exporter:v1.6.1
+          ports:
+            - containerPort: 9100
+              hostPort: 9100
+              protocol: TCP
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 30Mi
+            limits:
+              cpu: 100m
+              memory: 50Mi
+          args:
+            - --path.rootfs=/
