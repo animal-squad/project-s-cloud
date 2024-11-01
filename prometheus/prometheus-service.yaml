@@ -1,0 +1,14 @@
+# prometheus-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: prometheus-server
+spec:
+  type: NodePort
+  selector:
+    app: prometheus
+  ports:
+    - port: 9090
+      targetPort: 9090
+      nodePort: 30005 # NodePort 포트 번호는 30000-32767 사이에서 선택
