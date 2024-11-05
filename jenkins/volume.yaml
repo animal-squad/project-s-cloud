@@ -1,0 +1,35 @@
+#jenkinsVolume.yaml
+---
+#jenkinsPV.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: jenkins-pv-volume
+  labels:
+    type: nfs
+spec:
+  storageClassName: nfs-storage
+  claimRef:
+    name: jenkins-pv-claim
+    namespace: { { jenkins.namespace } }
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /nfs_shared/jenkins # make your nfs.dir path
+    server: { { master.private.ip } }
+---
+#jenkinsPVC.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jenkins-pv-claim
+  namespace: { { jenkins.namespace } }
+spec:
+  storageClassName: nfs-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi
