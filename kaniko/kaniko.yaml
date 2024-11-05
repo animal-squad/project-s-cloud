@@ -1,0 +1,47 @@
+#kainko.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  namespace: devops-tools
+  name: kaniko-backend
+spec:
+  template:
+    metadata:
+      name: kiniko-backend
+  spec:
+    nodeSelector:
+      role: devops
+    containers:
+      - name: kaniko
+        image: gcr.io/kaniko-project/executor:latest
+        env:
+          - name: GIT_TOKEN
+            valueFrom:
+              secretKeyRef:
+                name: kaniko-secrets
+                key: GIT_TOKEN
+        args: [
+            "--dockerfile=./Dockerfile",
+            "--context=git://${GIT_REPO_URL}#refs/heads/${GIT_BRANCH}",
+            "--destination=${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}",
+            "--build-arg=GIT_CREDENTIALS=${GIT_TOKEN}",
+            "--cache=true",
+            "--cache-repo=${IMAGE_REGISTRY}/${IMAGE_REPO}-kaniko-cache",
+          ] # replace with your dockerhub account
+        volumeMounts:
+          - name: kaniko-secret
+            mountPath: /kaniko/.docker
+          - name: dockerfile-storage
+            mountPath: /workspace
+    restartPolicy: Never
+
+    volumes:
+      - name: kaniko-secret
+        secret:
+          secretName: regcred
+          items:
+            - key: .dockerconfigjson
+              path: config.json
+      - name: dockerfile-storage
+        persistentVolumeClaim:
+          claimName: kaniko-pv-claim
