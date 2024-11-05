@@ -1,0 +1,35 @@
+#kaniko-volume.yaml
+---
+#kaniko-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: kaniko-pv-volume
+  labels:
+    type: nfs
+spec:
+  storageClassName: nfs-storage
+  claimRef:
+    name: kaniko-pv-claim
+    namespace: devops-tools
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /nfs_shared/kaniko
+    server: 10.0.1.104
+---
+#kaniko-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: kaniko-pv-claim
+  namespace: devops-tools
+spec:
+  storageClassName: nfs-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi
