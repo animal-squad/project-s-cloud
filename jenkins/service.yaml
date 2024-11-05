@@ -1,0 +1,14 @@
+#jenkins.service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: jenkins-service
+  namespace: { { jenkins.namespace } }
+spec:
+  selector:
+    app: jenkins-server
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      nodePort: { { port.NUMBER } } # service type: nodeport일 경우에만

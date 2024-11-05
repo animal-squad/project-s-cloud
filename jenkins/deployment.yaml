@@ -1,0 +1,82 @@
+#jenkins.deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: {{ jenkins.namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins-server
+  template:
+    metadata:
+      labels:
+        app: jenkins-server
+      annotations: # prometheus metrics 데이터 수집 주석
+        prometheus.io/scrape: "true" 
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/prometheus"
+    spec:
+      securityContext: # 실행 권한 설정
+            fsGroup: 1000
+            runAsUser: 1000
+      serviceAccountName: jenkins-admin
+      containers:
+        - name: jenkins
+          image: {{registry/image.path}}# 기존 jenkins image에서 사용자화 한 image
+          resources:
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+              ephemeral-storage: "2Gi"
+            requests:
+              memory: "500Mi"
+              cpu: "500m"
+              ephemeral-storage: "1Gi"
+          ports:
+            - name: httpport
+              containerPort: 8080
+            - name: jnlpport
+              containerPort: 50000
+          livenessProbe:
+            httpGet:
+              path: "/login"
+              port: 8080
+            initialDelaySeconds: 90
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: "/login"
+              port: 8080
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: jenkins-data # jenkins workspace
+              mountPath: /var/jenkins_home
+            - name: kubectl-bin
+              mountPath: /usr/bin/kubectl # mount 설정 필수 
+            - name: containerd-bin
+              mountPath: /usr/bin/containerd # mount 설정 필수
+            - name: containerd-sock
+              mountPath: /run/containerd/containerd.sock # mount 설정 필수
+      volumes:
+        - name: jenkins-data
+          persistentVolumeClaim:
+              claimName: jenkins-pv-claim
+        - name: kubectl-bin # mount 설정 필수
+          hostPath:
+            path: /usr/bin/kubectl
+            type: File
+        - name: containerd-bin # mount 설정 필수
+          hostPath:
+            path: /usr/bin/containerd
+            type: File
+        - name: containerd-sock # mount 설정 필수
+          hostPath:
+            path: /run/containerd/containerd.sock
+            type: Socket
