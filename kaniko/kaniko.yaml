@@ -1,47 +1,42 @@
-#kainko.yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
-  namespace: devops-tools
-  name: kaniko-backend
+  namespace: { { kaniko-namespace } }
+  name: { { kaniko-job-name } } # Jenkinsfile에서 name 일치 시켜줘야 함
 spec:
   template:
     metadata:
-      name: kiniko-backend
-  spec:
-    nodeSelector:
-      role: devops
-    containers:
-      - name: kaniko
-        image: gcr.io/kaniko-project/executor:latest
-        env:
-          - name: GIT_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: kaniko-secrets
-                key: GIT_TOKEN
-        args: [
-            "--dockerfile=./Dockerfile",
-            "--context=git://${GIT_REPO_URL}#refs/heads/${GIT_BRANCH}",
-            "--destination=${IMAGE_REGISTRY}/${IMAGE_REPO}:${IMAGE_TAG}",
-            "--build-arg=GIT_CREDENTIALS=${GIT_TOKEN}",
-            "--cache=true",
-            "--cache-repo=${IMAGE_REGISTRY}/${IMAGE_REPO}-kaniko-cache",
-          ] # replace with your dockerhub account
-        volumeMounts:
-          - name: kaniko-secret
-            mountPath: /kaniko/.docker
-          - name: dockerfile-storage
-            mountPath: /workspace
-    restartPolicy: Never
+      name: { { kaniko-job-name } } # Jenkinsfile에서 name 일치 시켜줘야 함
+    spec:
+      nodeSelector:
+        role: { { kaniko-namespace } }
+      containers:
+        - name: kaniko
+          image: gcr.io/kaniko-project/executor:latest
+          env:
+            - name: GIT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: kaniko-secret
+                  key: GIT_TOKEN
+          args:
+            [
+              "--dockerfile=Dockerfile",
+              "--context=git://github.com/animal-squad/project-s-BE.git#refs/heads/main",
+              "--destination=ghcr.io/animal-squad/project-s-be:0b9aa46",
+              "--build-arg=GIT_CREDENTIALS=${GIT_TOKEN}",
+              "--cache=true",
+              "--cache-repo=ghcr.io/animal-squad/project-s-be-kaniko-cache",
+            ]
+          volumeMounts:
+            - name: ghcr-secret
+              mountPath: /kaniko/.docker
+      restartPolicy: Never
 
-    volumes:
-      - name: kaniko-secret
-        secret:
-          secretName: regcred
-          items:
-            - key: .dockerconfigjson
-              path: config.json
-      - name: dockerfile-storage
-        persistentVolumeClaim:
-          claimName: kaniko-pv-claim
+      volumes:
+        - name: ghcr-secret
+          secret:
+            secretName: ghcr-secret # 생성한 docker-registry secret을 이름
+            items:
+              - key: .dockerconfigjson
+                path: config.json
