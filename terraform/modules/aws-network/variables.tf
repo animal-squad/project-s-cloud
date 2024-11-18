@@ -21,6 +21,11 @@ variable "cidr_block" {
   type        = string
 }
 
+variable "enable_dns_hostnames" {
+  description = "VPC에서 DNS hostname을 지원해주는지에 대한 여부"
+  type        = bool
+}
+
 variable "public_subnet_azs" {
   description = "public subnet을 생성할 az 항목들"
   type        = list(string)
