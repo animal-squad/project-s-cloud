@@ -30,6 +30,8 @@ resource "aws_db_instance" "rds" {
   skip_final_snapshot          = true
   performance_insights_enabled = true
 
+  publicly_accessible = var.publicly_accessible
+
   tags = {
     Name = "${var.name_prefix}-rds"
   }

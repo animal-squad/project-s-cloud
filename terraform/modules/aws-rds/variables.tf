@@ -66,6 +66,11 @@ variable "backup_target" {
   DB 유형 및 설정
 */
 
+variable "publicly_accessible" {
+  description = "RDS public 접근 가능 여부"
+  type        = bool
+}
+
 variable "engine" {
   description = "RDS 생성에 사용할 DB 엔진 유형"
   type        = string
