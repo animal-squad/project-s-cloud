@@ -1,0 +1,31 @@
+#alermanager-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-config
+  namespace: prometheus-server
+  labels:
+    app: alertmanager
+data:
+  alertmanager.yml: |
+    global:
+      resolve_timeout: 5m
+    route:
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 1h
+      receiver: 'slack'
+    receivers:
+      - name: 'slack'
+        slack_configs:
+          - api_url: {[ api_url ]}
+            channel: '#animal-squad' #channel_name
+            send_resolved: true
+            username: 'AlertManager'
+            icon_emoji: ':warning'
+            text: "{{ range .Alerts }}\n*Alert:* {{ .Annotations.summary }}\n*Description:* {{ .Annotations.description }}\n*Severity:* {{ .Labels.severity }}\n*Status:* {{ .Status }}\n{{ end }}"
+            footer: '{{ .CommonLabels.cluster }}'
+    inhibit_rules:
+      - source_match:
+          severity: 'critical, warning'
