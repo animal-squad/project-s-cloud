@@ -1,0 +1,57 @@
+#loki-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: loki
+  namespace: loki-server
+  labels:
+    app: loki
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: loki
+  template:
+    metadata:
+      labels:
+        app: loki
+    spec:
+      nodeName: devops-worker
+      securityContext: # 권한 설정
+        fsGroup: 1000
+        runAsUser: 1000
+      containers:
+        - name: loki
+          image: grafana/loki:latest # 최신 버전 확인 필요
+          args:
+            - -config.file=/etc/loki/loki.yaml
+            - -config.expand-env=true # 환경 변수 확장 활성화 옵션
+          ports:
+            - containerPort: 3100
+            - containerPort: 9095
+          volumeMounts:
+            - name: config
+              mountPath: /etc/loki
+            - name: storage
+              mountPath: /data
+          resources:
+            limits:
+              memory: "750Mi"
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: AWS_SECRET_ACCESS_KEY
+      volumes:
+        - name: config
+          configMap:
+            name: loki-config
+        - name: storage
+          persistentVolumeClaim:
+            claimName: loki-pvc

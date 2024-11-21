@@ -1,7 +1,7 @@
 #기존 이미지에 패키지를 더함 경우에 따라서 컨테이너 안에서 수정이 필요함
 #jenkins custom image build 전용 Dockerfile 
 # 1. 공식 Jenkins LTS 이미지를 베이스로 사용
-FROM jenkins/jenkins:lts
+FROM jenkins/jenkins:2.479.1-lts-jdk17
 
 # 2. 루트 사용자로 전환하여 추가 패키지 설치
 USER root

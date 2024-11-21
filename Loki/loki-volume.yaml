@@ -1,0 +1,35 @@
+#loki-Volume.yaml
+---
+#loki-PV.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: loki-pv
+  labels:
+    type: nfs
+spec:
+  storageClassName: nfs-storage
+  claimRef:
+    name: loki-pvc
+    namespace: loki-server
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /nfs_shared/loki # make your nfs.dir path
+    server: { { master_private_ip } }
+---
+#loki-PVC.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: loki-pvc
+  namespace: loki-server
+spec:
+  storageClassName: nfs-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 3Gi

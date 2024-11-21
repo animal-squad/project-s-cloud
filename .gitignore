@@ -7,7 +7,7 @@ ansible/gen_hosts.sh
 
 #vault
 vault/vault-cluster-vault.json
-
+vault/*.csv
 # .tfstate files
 *.tfstate
 *.tfstate.*

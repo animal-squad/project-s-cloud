@@ -1,0 +1,21 @@
+#loki-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: loki-service
+  namespace: loki-server
+  labels:
+    app: loki
+spec:
+  selector:
+    app: loki
+  type: ClusterIP
+  ports:
+    - port: 3100
+      targetPort: 3100
+      protocol: TCP
+      name: http
+    - port: 9095
+      targetPort: 9095
+      protocol: TCP
+      name: grpc

@@ -1,0 +1,55 @@
+#promtail-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: promtail-config
+  namespace: loki-server
+data:
+  promtail.yaml: |
+    server:
+      log_level: info
+      http_listen_port: 9080
+      grpc_listen_port: 0
+
+    positions:
+      filename: /run/promtail/positions.yaml # positions.yaml path 꼭 지정해야함 안 하면 경로 인식 못해서 로그 수집안함
+
+    clients:
+      - url: http://loki-service.loki-server.svc.cluster.local:3100/loki/api/v1/push
+        backoff_config:
+          min_period: 500ms
+          max_period: 5s
+        batchsize: 512000 # 한 번에 전송 가능한 최대 바이트 size
+        batchwait: 5s
+
+    target_config:
+      sync_period: 10s
+    scrape_configs:
+      - job_name: kubernetes-pods-app
+        kubernetes_sd_configs:
+          - role: pod
+            namespaces:
+              names:
+                - linket
+                - ingress-nginx
+                  # - devops
+                  # - vault
+                  # - grafana-server
+                  # - prometheus-server
+            selectors:
+            - role: pod
+        relabel_configs:
+          - source_labels: [__meta_kubernetes_pod_label_app]
+            target_label: app
+          - source_labels: [__meta_kubernetes_namespace]
+            target_label: namespace
+          - source_labels: [__meta_kubernetes_pod_name]
+            target_label: pod
+          - source_labels: [__meta_kubernetes_container_name]
+            target_label: container
+          - source_labels: [__meta_kubernetes_pod_uid]
+            target_label: __path__
+            replacement: /var/log/pods/*/*/*.log
+          - source_labels: [__meta_kubernetes_container]
+            target_label: __path__
+            replacement: /var/log/containers/*.log

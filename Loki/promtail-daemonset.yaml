@@ -1,0 +1,57 @@
+---
+#Promtail-Daemonset.yaml
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: promtail
+  namespace: loki-server
+  labels:
+    app: promtail
+spec:
+  selector:
+    matchLabels:
+      app: promtail
+  template:
+    metadata:
+      labels:
+        app: promtail
+    spec:
+      tolerations:
+        - key: node-role.kubernetes.io/control-plane #master node에 배포 하기 위한 설정
+          operator: Exists
+          effect: NoSchedule
+      serviceAccountName: promtail
+      securityContext:
+        runAsUser: 0
+        fsGroup: 0
+      containers:
+        - name: promtail
+          image: grafana/promtail:latest # 최신 버전 확인 필요
+          args:
+            - -config.file=/etc/promtail/promtail.yaml
+          volumeMounts:
+            - name: config
+              mountPath: /etc/promtail
+            - name: positions
+              mountPath: /run/promtail
+            - name: varlog
+              mountPath: /var/log/pods
+            - name: var-log-containers # containerd 전용 경로
+              mountPath: /var/log/containers
+              readOnly: true
+          resources:
+            limits:
+              memory: "128Mi"
+      volumes:
+        - name: config
+          configMap:
+            name: promtail-config
+        - name: positions
+          hostPath:
+            path: /run/promtail # /run/promtail/positions.yaml path 있어야 tailing 할 log path 인식하게됨
+        - name: varlog
+          hostPath:
+            path: /var/log/pods
+        - name: var-log-containers # containerd 전용 경로
+          hostPath:
+            path: /var/log/containers
