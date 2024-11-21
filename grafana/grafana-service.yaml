@@ -1,0 +1,15 @@
+---
+#grafana-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+  namespace: grafana-server
+spec:
+  type: NodePort
+  ports:
+    - port: 3000
+      targetPort: 3000
+      nodePort: 30006
+  selector:
+    app: grafana
