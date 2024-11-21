@@ -1,0 +1,12 @@
+#redis-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  namespace: linket
+data:
+  redis.conf: |
+    bind 0.0.0.0
+    protected-mode no
+    save "" # RDB 스냅샷 비활성화
+    appendonly no # (Append only File) option 비활성화

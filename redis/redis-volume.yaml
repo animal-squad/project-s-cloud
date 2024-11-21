@@ -1,0 +1,36 @@
+---
+#redis-pv.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: redis-pv
+  namespace: linket
+  labels:
+    type: nfs
+spec:
+  claimRef:
+    name: redis-pvc
+    namespace: linket
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /nfs_shared/redis
+    server: { { master_private_ip } }
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: nfs-storage
+---
+#redis-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: linket
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: nfs-storage
