@@ -1,0 +1,32 @@
+---
+#grafana-PV.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: grafana-server-pv
+spec:
+  storageClassName: nfs-storage
+  claimRef:
+    name: grafana-server-pv-claim
+    namespace: grafana-server
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteMany
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: { { master_private_ip } }
+    path: /nfs_shared/grafana
+---
+#grafana-PVC.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: grafana-server-pv-claim
+  namespace: grafana-server
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
