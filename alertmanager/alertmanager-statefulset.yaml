@@ -1,6 +1,6 @@
-#alertmanager-deployment.yaml
+#alertmanager-statefulset.yaml
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: alertmanager
   namespace: prometheus-server
@@ -28,7 +28,12 @@ spec:
           volumeMounts:
             - name: config-volume
               mountPath: /etc/alertmanager
+            - name: templates-volume
+              mountPath: /etc/alertmanager/templates
       volumes:
         - name: config-volume
           configMap:
             name: alertmanager-config
+        - name: templates-volume
+          configMap:
+            name: alertmanager-templates

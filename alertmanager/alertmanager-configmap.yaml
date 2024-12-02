@@ -10,22 +10,27 @@ data:
   alertmanager.yml: |
     global:
       resolve_timeout: 5m
+    templates:
+      - /etc/alertmanager/templates/*.tmpl
+
     route:
       group_by: ['alertname']
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 1h
-      receiver: 'slack'
+      receiver: 'discord'
+
     receivers:
-      - name: 'slack'
-        slack_configs:
-          - api_url: {[ api_url ]}
-            channel: '#animal-squad' #channel_name
+      - name: 'discord'
+        discord_configs:
+          - webhook_url: "{{ discord_webhook_URL }}"
             send_resolved: true
-            username: 'AlertManager'
-            icon_emoji: ':warning'
-            text: "{{ range .Alerts }}\n*Alert:* {{ .Annotations.summary }}\n*Description:* {{ .Annotations.description }}\n*Severity:* {{ .Labels.severity }}\n*Status:* {{ .Status }}\n{{ end }}"
-            footer: '{{ .CommonLabels.cluster }}'
+            title: '{{ template "discord.default.title" . }}'
+            message: '{{ template "discord.default.message" . }}'
+
     inhibit_rules:
       - source_match:
-          severity: 'critical, warning'
+          severity: 'critical'
+        target_match:
+          severity: 'warning'
+        equal: ['alertname']

@@ -1,0 +1,45 @@
+# alertmanager-templates-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: alertmanager-templates
+  namespace: prometheus-server
+data:
+  discord.tmpl: |
+    {{ define "discord.default.title" }}
+    {{ if eq .Status "firing" }}
+      🔴 **{{ .CommonLabels.alertname }}**
+    {{ else if eq .Status "resolved" }}
+      🟢 **{{ .CommonLabels.alertname }} Resolved**
+    {{ end }}
+    {{ end }}
+
+    {{ define "discord.default.message" }}
+    {{ range .Alerts }}
+    **📛 Alert:** {{ .Annotations.summary }}
+
+    **📝 Description:** {{ .Annotations.description }}
+
+    **🚨 Severity:** {{ .Labels.severity }}
+
+    {{ if .Labels.namespace }}
+    **📍 Namespace:** {{ .Labels.namespace }}
+    {{ end }}
+
+    {{ if .Labels.pod }}
+    **🐳 Pod:** {{ .Labels.pod }}
+    {{ end }}
+
+    {{ if .Labels.node }}
+    **🖥️ Node:** {{ .Labels.node }}
+    {{ end }}
+
+    **⏰ Time:** <t:{{ .StartsAt.Unix }}:F>
+
+    **📊 Status:** {{ .Status | toUpper }}
+
+    {{ if eq .Status "resolved" }}
+    **✅ Resolved At:** <t:{{ .EndsAt.Unix }}:F>
+    {{ end }}
+    {{ end }}
+    {{ end }}
