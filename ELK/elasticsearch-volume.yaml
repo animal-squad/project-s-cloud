@@ -1,0 +1,33 @@
+#Elasticsearch-volume.yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: elasticsearch-pv
+  labels:
+    type: nfs
+spec:
+  storageClassName: nfs-storage
+  claimRef:
+    name: elasticsearch-pv-claim
+    namespace: elk
+  capacity:
+    storage: 20Gi
+  accessModes:
+    - ReadWriteMany
+  nfs:
+    path: /nfs_shared/elasticsearch
+    server: { { private_ip } }
+---
+#Elasticsearch-volume-claim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: elasticsearch-pv-claim
+  namespace: elk
+spec:
+  storageClassName: nfs-storage
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 20Gi

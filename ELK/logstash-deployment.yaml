@@ -1,0 +1,37 @@
+#Logstash-Deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash
+  namespace: elk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash
+  template:
+    metadata:
+      labels:
+        app: logstash
+    spec:
+      nodeName: elk-worker
+      containers:
+        - name: logstash
+          image: docker.elastic.co/logstash/logstash:8.16.1
+          ports:
+            - containerPort: 5044
+          volumeMounts:
+            - name: config-volume
+              mountPath: /usr/share/logstash/pipeline
+            - name: logstash-yml
+              mountPath: /usr/share/logstash/config
+      volumes:
+        - name: config-volume
+          configMap:
+            name: logstash-config
+        - name: logstash-yml
+          configMap:
+            name: logstash-yml
+            items:
+              - key: logstash.yml
+                path: logstash.yml

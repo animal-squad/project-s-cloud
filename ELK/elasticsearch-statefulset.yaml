@@ -1,0 +1,47 @@
+#elasticsearch-statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: elasticsearch
+  namespace: elk
+spec:
+  serviceName: "elasticsearch"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      nodeName: elk-worker
+      containers:
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.16.1
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+          env:
+            - name: ELASTIC_PASSWORD
+              value: "animal"
+            - name: "discovery.type"
+              value: "single-node"
+            - name: "ES_JAVA_OPTS"
+              value: "-Xms512m -Xmx512m"
+          ports:
+            - containerPort: 9200
+              name: http
+          volumeMounts:
+            - name: elasticsearch-storage
+              mountPath: /usr/share/elasticsearch/data
+            - name: tz-seoul
+              mountPath: /etc/localtime
+      volumes:
+        - name: elasticsearch-storage
+          persistentVolumeClaim:
+            claimName: elasticsearch-pv-claim
+        - name: tz-seoul
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Seoul
