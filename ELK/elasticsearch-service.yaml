@@ -1,0 +1,13 @@
+#Elasticsearch-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-svc
+  namespace: elk
+spec:
+  selector:
+    app: elasticsearch
+  ports:
+    - protocol: TCP
+      port: 9200
+      targetPort: 9200

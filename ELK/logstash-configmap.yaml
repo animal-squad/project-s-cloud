@@ -1,0 +1,21 @@
+#Logstash-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-config
+  namespace: elk
+data:
+  logstash.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    output {
+      elasticsearch {
+        hosts => ["http://elasticsearch-svc.elk.svc.cluster.local:9200"]
+        index => "logstash-%{+YYYY.MM.dd}"
+        user => "logstash_system"
+        password => "animal"
+      }
+    }
