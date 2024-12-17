@@ -8,4 +8,6 @@ data:
   logstash.yml: |
     http.host: "0.0.0.0"
     xpack.monitoring.elasticsearch.hosts: ["http://elasticsearch-svc.elk.svc.cluster.local:9200"]
+    xpack.monitoring.elasticsearch.username: "logstash_writer"
+    xpack.monitoring.elasticsearch.password: "password"
     path.config: /usr/share/logstash/pipeline

@@ -22,7 +22,7 @@ spec:
             - name: ELASTICSEARCH_USERNAME
               value: "kibana_system"
             - name: ELASTICSEARCH_PASSWORD
-              value: "animal"
+              value: "password"
             - name: ELASTICSEARCH_HOSTS
               value: "http://elasticsearch-svc.elk.svc.cluster.local:9200"
           ports:
