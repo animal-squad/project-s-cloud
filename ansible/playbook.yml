@@ -24,3 +24,13 @@
 
     - name: Include worker_cfg tasks
       include_tasks: roles/kubernetes/tasks/worker_config.yml
+
+- hosts: masters
+  become: yes
+  vars_files:
+    - secret_file_path.yml
+  vars:
+    ansible_ssh_private_key_file: "{{ private_key_file }}"
+  tasks:
+    - name: NFS install and Configure
+      include_tasks: roles/nfs/tasks/install_nfs.yml

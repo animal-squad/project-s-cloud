@@ -15,7 +15,7 @@ data:
       elasticsearch {
         hosts => ["http://elasticsearch-svc.elk.svc.cluster.local:9200"]
         index => "logstash-%{+YYYY.MM.dd}"
-        user => "logstash_system"
-        password => "animal"
+        user => "logstash_writer"
+        password => "password"
       }
     }

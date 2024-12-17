@@ -1,6 +1,6 @@
 - name: Initialize Kubernetes Cluster
   ansible.builtin.shell: |
-    kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address=10.0.0.252
+    kubeadm init --pod-network-cidr=192.168.0.0/16 --apiserver-advertise-address={{ master_private_ip}}
 
 - name: Set up kubeconfig for the user
   ansible.builtin.shell: |
@@ -10,7 +10,7 @@
 
 - name: Download Calico manifest
   get_url:
-    url: https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/calico.yaml
+    url: https://raw.githubusercontent.com/projectcalico/calico/v3.28.1/manifests/calico.yaml
     dest: /tmp/calico.yaml
 
 - name: Apply Calico network plugin
