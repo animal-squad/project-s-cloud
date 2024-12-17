@@ -4,6 +4,7 @@ ansible/hosts.ini
 ansible/*.tfstate
 ansible/secret_path_file.yml
 ansible/gen_hosts.sh
+*.json
 
 #vault
 vault/vault-cluster-vault.json

@@ -1,0 +1,59 @@
+---
+# roles/nfs/tasks/install_nfs.yml
+
+- name: Install NFS packages
+  package:
+    name: "{{ 'nfs-kernel-server' if 'masters' in group_names else 'nfs-common' }}"
+    state: present
+
+- name: Ensure /nfs_shared directory exists
+  file:
+    path: /nfs_shared
+    state: directory
+    mode: "0755"
+
+- name: Create NFS shared subdirectories
+  file:
+    path: "/nfs_shared/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - jenkins_home
+    - vault
+    - prometheus
+    - metrics
+    - redis
+    - grafana
+    - elasticsearch
+
+- name: Set ownership of /nfs_shared and its subdirectories
+  file:
+    path: /nfs_shared
+    owner: "1000"
+    group: "1000"
+    recurse: yes
+
+- name: Configure /etc/exports for NFS shares (Masters only)
+  blockinfile:
+    path: /etc/exports
+    block: |
+      /nfs_shared/jenkins_home 10.0.0.0/16(rw,sync,no_root_squash,no_subtree_check)
+      /nfs_shared/vault 10.0.0.0/16(rw,sync,no_root_squash,no_subtree_check)
+      /nfs_shared/prometheus 10.0.0.0/16(rw,sync,no_root_squash,no_subtree_check)
+      /nfs_shared/metrics 10.0.0.0/16(rw,sync,no_root_squash,no_subtree_check)
+      /nfs_shared/redis 10.0.0.0/16(rw,sync,no_root_squash,no_subtree_check)
+      /nfs_shared/grafana 10.0.0.0/16(rw,sync,no_root_squash,no_subtree_check)
+      /nfs_shared/elasticsearch 10.0.0.0/16(rw,sync,no_root_squash,no_subtree_check)
+  when: "'masters' in group_names"
+  notify: Restart NFS Server
+
+- name: Export NFS shares (Masters only)
+  command: exportfs -r
+  when: "'masters' in group_names"
+
+# Handlers
+- name: Restart NFS Server
+  service:
+    name: nfs-kernel-server
+    state: restarted
+  when: "'masters' in group_names"
