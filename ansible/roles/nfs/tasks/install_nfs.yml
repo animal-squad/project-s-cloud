@@ -1,10 +1,18 @@
 ---
 # roles/nfs/tasks/install_nfs.yml
 
-- name: Install NFS packages
+- name: Install NFS kernel server on masters
   package:
-    name: "{{ 'nfs-kernel-server' if 'masters' in group_names else 'nfs-common' }}"
+    name: nfs-kernel-server
     state: present
+  when: "'masters' in group_names"
+
+# 2. 마스터가 아닌 모든 노드에 nfs-common 설치
+- name: Install NFS common on non-master nodes
+  package:
+    name: nfs-common
+    state: present
+  when: "'masters' not in group_names"
 
 - name: Ensure /nfs_shared directory exists
   file:
