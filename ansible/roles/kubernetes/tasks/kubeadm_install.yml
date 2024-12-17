@@ -13,7 +13,7 @@
   file:
     path: /etc/apt/keyrings
     state: directory
-    mode: '0755'
+    mode: "0755"
 
 - name: Add Docker GPG key
   ansible.builtin.shell: |
@@ -44,8 +44,8 @@
 - name: Modify containerd config for SystemdCgroup
   ansible.builtin.replace:
     path: /etc/containerd/config.toml
-    regexp: 'SystemdCgroup = false'
-    replace: 'SystemdCgroup = true'
+    regexp: "SystemdCgroup = false"
+    replace: "SystemdCgroup = true"
 
 - name: Restart containerd service
   ansible.builtin.systemd:
@@ -59,14 +59,14 @@
 
 - name: gen the directory & add Kubernetes apt-key
   ansible.builtin.shell: >
-    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key |
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.31/deb/Release.key |
     gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
   args:
     creates: /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 
 - name: add Kubernetes APT repository
   ansible.builtin.shell: >
-    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.27/deb/ /' |
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.31/deb/ /' |
     tee /etc/apt/sources.list.d/kubernetes.list
 
 - name: Update apt cache
@@ -82,8 +82,7 @@
     state: present
 
 - name: Mark Kubernetes pkg to hold version
-  ansible.builtin.command:
-    apt-mark hold kubelet kubeadm kubectl
+  ansible.builtin.command: apt-mark hold kubelet kubeadm kubectl
 
 - name: Enable and start kubelet service
   ansible.builtin.systemd:

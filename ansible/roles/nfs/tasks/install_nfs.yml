@@ -45,15 +45,7 @@
       /nfs_shared/grafana 10.0.0.0/16(rw,sync,no_root_squash,no_subtree_check)
       /nfs_shared/elasticsearch 10.0.0.0/16(rw,sync,no_root_squash,no_subtree_check)
   when: "'masters' in group_names"
-  notify: Restart NFS Server
 
 - name: Export NFS shares (Masters only)
   command: exportfs -r
-  when: "'masters' in group_names"
-
-# Handlers
-- name: Restart NFS Server
-  service:
-    name: nfs-kernel-server
-    state: restarted
   when: "'masters' in group_names"
