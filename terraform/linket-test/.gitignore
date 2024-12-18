@@ -1,0 +1,30 @@
+#ansible files
+ansible/ansible.cfg
+ansible/hosts.ini
+ansible/*.tfstate
+ansible/secret_path_file.yml
+ansible/gen_hosts.sh
+
+#vault
+vault/vault-cluster-vault.json
+vault/*.csv
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# .tfvars files
+*.tfvars
+
+# credentials
+*.pem
+aws-tflint-config
+
+# terraformrc file
+terraform.rc
+.terraformrc
+
+.DS_Store
+
+# .terraform
+/**/.terraform/modules
+/**/.terraform/**/registry.terraform.io
