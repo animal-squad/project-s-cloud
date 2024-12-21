@@ -1,0 +1,8 @@
+#ai-ConfigMap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-config
+  namespace: linket
+data:
+  PYTHONPATH: "./"

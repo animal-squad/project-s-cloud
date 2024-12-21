@@ -6,4 +6,10 @@ metadata:
   namespace: service
 data:
   DATABASE_URL: "postgres://DB_USERNAME:DB_PASSWORD@DB_HOST:PORT/DATABASENAME"
-  URL: "www.link-bucket.animal-squad.uk"
+  URL: "https://www.linket.site"
+  REDIS_HOST: "redis-svc.linket.svc.cluster.local"
+  REDIS_PORT: "6379"
+  DOMAIN: "linket.site"
+  NODE_ENV: "local"
+  SENTRY_ORG: "animal-squad-dz"
+  SENTRY_PROJECT: "linket-be"

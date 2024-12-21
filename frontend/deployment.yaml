@@ -1,0 +1,23 @@
+#frontend-nginx-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-nginx
+  namespace: linket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend-nginx
+  template:
+    metadata:
+      labels:
+        app: frontend-nginx
+    spec:
+      nodeSelector:
+        role: worker
+      containers:
+        - name: frontend-nginx-container
+          image: ghcr.io/animal-squad/project-s-fe-nginx:prod.v1
+          ports:
+            - containerPort: 80

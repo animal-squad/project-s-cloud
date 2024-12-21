@@ -1,0 +1,14 @@
+#netshoot-pod
+apiVersion: v1
+kind: Pod
+metadata:
+  name: net-pod
+  namespace: default
+spec:
+  nodeName: worker1
+  containers:
+    - name: netshoot-pod
+      image: nicolaka/netshoot
+      command: ["tail"]
+      args: ["-f", "/dev/null"]
+  terminationGracePeriodSeconds: 0

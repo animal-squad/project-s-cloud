@@ -1,0 +1,44 @@
+#ai-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-deployment
+  namespace: linket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai
+  template:
+    metadata:
+      labels:
+        app: ai
+    spec:
+      nodeSelector:
+        role: worker
+      containers:
+        - name: ai-container
+          image: ghcr.io/animal-squad/project-s-ai:a808ce5
+          ports:
+            - containerPort: 80
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-secrets
+                  key: OPENAI_API_KEY
+            - name: GOOGLE_SEARCH_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: ai-secrets
+                  key: GOOGLE_SEARCH_API_KEY
+            - name: GOOGLE_SEARCH_CX
+              valueFrom:
+                secretKeyRef:
+                  name: ai-secrets
+                  key: GOOGLE_SEARCH_CX
+            - name: PYTHONPATH
+              valueFrom:
+                configMapKeyRef:
+                  name: ai-config
+                  key: PYTHONPATH

@@ -1,0 +1,13 @@
+#ai-Service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-service
+  namespace: linket
+spec:
+  selector:
+    app: ai
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80

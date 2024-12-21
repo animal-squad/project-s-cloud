@@ -1,0 +1,42 @@
+#ai-Deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-deployment
+  namespace: linket
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ai
+  template:
+    metadata:
+      labels:
+        app: ai
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        vault.hashicorp.com/agent-inject-init-first: "true"
+        vault.hashicorp.com/role: app-secret
+        vault.hashicorp.com/agent-inject-status: update
+        vault.hashicorp.com/agent-inject-secret-credential: "AI/data/credential"
+        vault.hashicorp.com/agent-inject-template-config: |
+          {{- with secret "AI/data/credential" -}}
+          export OPENAI_API_KEY="{{ .Data.data.OPENAI_API_KEY }}"
+          export GOOGLE_SEARCH_API_KEY="{{ .Data.data.GOOGLE_SEARCH_API_KEY }}"
+          export GOOGLE_SEARCH_CX="{{ .Data.data.GOOGLE_SEARCH_CX }}"
+          export PYTHONEPATH="{{ .Data.data.PYTHONEPATH }}"
+          {{- end}}
+    spec:
+      serviceAccountName: linket-be-app-sa
+      nodeSelector:
+        role: worker
+      containers:
+        - name: ai-container
+          image: ghcr.io/animal-squad/project-s-ai:695430e
+          ports:
+            - containerPort: 80
+          command: ["sh", "-c"]
+          args:
+            - |
+              . /vault/secrets/config
+              uvicorn main:app --host 0.0.0.0 --port 80

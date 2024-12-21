@@ -18,7 +18,7 @@ spec:
     - ReadWriteMany
   nfs:
     path: /nfs_shared/kaniko
-    server: 10.0.1.104
+    server: { { private_ip } }
 ---
 #kaniko-pvc.yaml
 apiVersion: v1
