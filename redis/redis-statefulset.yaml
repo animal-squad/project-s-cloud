@@ -28,6 +28,9 @@ spec:
           volumeMounts:
             - name: redis-storage
               mountPath: /data
+            - name: redis-config
+              mountPath: /etc/redis/redis.conf
+              subPath: redis.conf
           env:
             - name: ALLOW_EMPTY_PASSWORD
               value: "yes"
@@ -35,3 +38,6 @@ spec:
         - name: redis-storage
           persistentVolumeClaim:
             claimName: redis-pvc # NFS 기반 PVC를 사용
+        - name: redis-config
+          configMap:
+            name: redis-config

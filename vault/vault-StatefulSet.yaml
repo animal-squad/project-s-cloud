@@ -20,7 +20,7 @@ spec:
       initContainers:
         - name: init-config # 초기화 용도
           image: busybox
-          command: ['sh', '-c', 'cp /tmp/vault-config/* /vault/config/' ]
+          command: ["sh", "-c", "cp /tmp/vault-config/* /vault/config/"]
           volumeMounts:
             - name: config-tmp
               mountPath: /tmp/vault-config
@@ -28,7 +28,7 @@ spec:
               mountPath: /vault/config
       containers:
         - name: vault-container
-          image: vault:1.13.3
+          image: hashicorp/vault:1.18
           command:
             - "vault"
             - "server"

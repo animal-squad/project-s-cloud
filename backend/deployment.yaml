@@ -1,11 +1,11 @@
-#backend/deployment.yaml
+#backend-Deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: backend-deployment
-  namespace: service
+  namespace: linket
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: backend
@@ -13,75 +13,56 @@ spec:
     metadata:
       labels:
         app: backend
+      annotations:
+        vault.hashicorp.com/agent-inject: "true"
+        # ======== Vault injector가 먼저 시작하는 주석 =====
+        vault.hashicorp.com/agent-inject-init-first: "true"
+        vault.hashicorp.com/agent-run-as-init: "true"
+        vault.hashicorp.com/role: app-secret
+        vault.hashicorp.com/agent-inject-status: update
+        # ========= Vault 주입경로 =========
+        vault.hashicorp.com/agent-inject-secret-config: "fullstack/data/config"
+        vault.hashicorp.com/agent-inject-secret-credential: "fullstack/data/credential"
+        # ======== Vault secret 주입 경로 =======
+        vault.hashicorp.com/agent-inject-template-config: |
+          {{- with secret "fullstack/data/config" -}}
+          export DATABASE_URL="{{ .Data.data.DATABASE_URL }}"
+          export URL="{{ .Data.data.URL }}"
+          export REDIS_HOST="{{ .Data.data.REDIS_HOST }}"
+          export DOMAIN="{{ .Data.data.DOMAIN }}"
+          export REDIS_PORT="{{ .Data.data.REDIS_PORT }}"
+          export SENTRY_ORG="{{ .Data.data.SENTRY_ORG }}"
+          export SENTRY_PROJECT="{{ .Data.data.SENTRY_PROJECT }}"
+          export NODE_ENV="{{ .Data.data.NODE_ENV }}"
+          {{- end}}
+          {{- with secret "fullstack/data/credential" -}}
+          export DB_PASSWOR="{{ .Data.data.DB_PASSWORD }}"
+          export GOOGLE_CLIENT_SECRET="{{ .Data.data.GOOGLE_CLIENT_SECRET }}"
+          export GOOGLE_CLIENT_ID="{{ .Data.data.GOOGLE_CLIENT_ID }}"
+          export SENTRY_AUTH_TOKEN="{{ .Data.data.SENTRY_AUTH_TOKEN }}"
+          export SENTRY_DSN="{{ .Data.data.SENTRY_DSN }}"
+          export SESSION_SECRET="{{ .Data.data.SESSION_SECRET }}"
+          {{- end}}
     spec:
+      serviceAccountName: linket-be-app-sa
       nodeSelector:
-        role: service
-      initContainers: # only init Prisma initializing
-        - name: init-container
-          image: ghcr.io/animal-squad/project-s-be:oauth.test.v2
-          ports:
-            - containerPort: 3000
-          command: ["npx", "prisma", "db", "push"]
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: backend-config
-                  key: DATABASE_URL
-            - name: GOOGLE_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: backend-secret
-                  key: GOOGLE_CLIENT_ID
-            - name: GOOGLE_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: backend-secret
-                  key: GOOGLE_CLIENT_SECRET
-            - name: SESSION_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: backend-secret
-                  key: SESSION_SECRET
-            - name: URL
-              valueFrom:
-                configMapKeyRef:
-                  name: backend-config
-                  key: URL
+        role: worker
       containers:
         - name: backend-container
-          image: ghcr.io/animal-squad/project-s-be:oauth.test.v2
+          image: ghcr.io/animal-squad/project-s-be:998d219
           ports:
             - containerPort: 3000
-          env:
-            - name: DATABASE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: backend-config
-                  key: DATABASE_URL
-            - name: GOOGLE_CLIENT_ID
-              valueFrom:
-                secretKeyRef:
-                  name: backend-secret
-                  key: GOOGLE_CLIENT_ID
-            - name: GOOGLE_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: backend-secret
-                  key: GOOGLE_CLIENT_SECRET
-            - name: SESSION_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: backend-secret
-                  key: SESSION_SECRET
-            - name: URL
-              valueFrom:
-                configMapKeyRef:
-                  name: backend-config
-                  key: URL
-          command: ["pnpm", "start"]
+          command: ["sh", "-c"]
+          args:
+            - |
+              source /vault/secrets/config
+              npx prisma db push --accept-data-loss
+              npx prisma generate
+              pnpm start
           resources:
             requests:
+              memory: "125Mi"
               ephemeral-storage: "500Mi" # 최소 2GiB 보장
             limits:
+              memory: "500Mi"
               ephemeral-storage: "2Gi" # 최대 4GiB 사용 가능

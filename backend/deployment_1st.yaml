@@ -1,0 +1,100 @@
+#backend/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+  namespace: service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      nodeSelector:
+        role: service
+      containers: # only init Prisma initializing
+        - name: backend-container
+          image: ghcr.io/animal-squad/project-s-be:Tag-image
+          ports:
+            - containerPort: 3000
+          env:
+            - name: DATABASE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: DATABASE_URL
+            - name: GOOGLE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: GOOGLE_CLIENT_ID
+            - name: GOOGLE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: GOOGLE_CLIENT_SECRET
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: SESSION_SECRET
+            - name: URL
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: URL
+            - name: REDIS_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: REDIS_HOST
+            - name: REDIS_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: REDIS_PORT
+            - name: DOMAIN
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: DOMAIN
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: NODE_ENV
+            - name: SENTRY_ORG
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: SENTRY_ORG
+            - name: SENTRY_PROJECT
+              valueFrom:
+                configMapKeyRef:
+                  name: backend-config
+                  key: SENTRY_PROJECT
+            - name: SENTRY_AUTH_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: SENTRY_AUTH_TOKEN
+            - name: SENTRY_DSN
+              valueFrom:
+                secretKeyRef:
+                  name: backend-secret
+                  key: SENTRY_DSN
+          command: ["sh", "-c"]
+          args:
+            - |
+              npx prisma db push --accept-data-loss
+              npx prisma generate
+              pnpm start
+          resources:
+            requests:
+              ephemeral-storage: "500Mi" # 최소 2GiB 보장
+            limits:
+              ephemeral-storage: "2Gi" # 최대 4GiB 사용 가능
