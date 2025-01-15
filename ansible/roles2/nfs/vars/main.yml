@@ -1,0 +1,11 @@
+---
+# role nfs/vars/main.yml
+nfs_shared_dir_path: /srv/nfsv4/shared
+subDirPath:
+  - jenkins_home
+  - vault
+  - prometheus
+  - metrics
+  - redis
+  - grafana
+  - elasticsearch

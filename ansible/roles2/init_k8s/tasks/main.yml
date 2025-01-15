@@ -1,0 +1,30 @@
+---
+# roles/init_k8s/tasks/main.yml
+- name: Initialize Kubernetes Cluster
+  ansible.builtin.shell: |
+    kubeadm init --pod-network-cidr={{ Pod_CIDR }} --apiserver-advertise-address={{ ansible_facts.default_ipv4.address }}
+
+- name: Set up kubeconfig for the user
+  ansible.builtin.shell: |
+    mkdir -p $HOME/.kube
+    cp /etc/kubernetes/admin.conf $HOME/.kube/config
+    chown $(id -u):$(id -g) $HOME/.kube/config
+
+- name: Download Calico manifest
+  get_url:
+    url: https://raw.githubusercontent.com/projectcalico/calico/{{ Calico_version }}/manifests/calico.yaml
+    dest: /tmp/calico.yaml
+
+- name: Apply Calico network plugin
+  ansible.builtin.command: kubectl apply -f /tmp/calico.yaml
+  args:
+    chdir: /tmp
+
+- name: Get join command
+  ansible.builtin.shell: kubeadm token create --print-join-command
+  register: join_command_raw
+
+- name: Join command to hostvars
+  ansible.builtin.shell: "{{ join_command_raw.stdout }} "
+  delegate_to: "{{ item }}"
+  loop: "{{ groups['workers'] }}"

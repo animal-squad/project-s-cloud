@@ -1,0 +1,50 @@
+---
+# /nfs/task/main.yml
+
+- name: Install NFS kernel server on masters
+  ansible.builtin.package:
+    name: nfs-kernel-server
+    state: present
+  when: "'master' in group_names"
+
+# 2. 마스터가 아닌 모든 노드에 nfs-common 설치
+- name: Install NFS common on non-master nodes
+  ansible.builtin.package:
+    name: nfs-common
+    state: present
+  when: "'master' not in group_names"
+
+- name: Create Dir "{{ nfs_shared_dir_path }}"
+  ansible.builtin.file:
+    path: "{{ nfs_shared_dir_path }}"
+    state: directory
+    mode: "0755"
+  when: "'master' in group_names"
+
+- name: Create NFS shared subDirectories
+  ansible.builtin.file:
+    path: "{{ nfs_shared_dir_path }}/{{ item }}"
+    state: directory
+    mode: "0755"
+  loop: "{{ subDirPath }}"
+  when: "'master' in group_names"
+
+- name: Set ownership of "{{ nfs_shared_dir_path }}" and its subdirectories
+  file:
+    path: "{{ nfs_shared_dir_path }}"
+    owner: "1000"
+    group: "1000"
+    recurse: yes
+  when: "'master' in group_names"
+
+- name: Configure /etc/exports for NFS shares (Masters only)
+  ansible.builtin.lineinfile:
+    path: /etc/exports
+    line: "{{ nfs_shared_dir_path }}/{{ item }} {{ cluster_node_CIDR }}(rw,sync,no_root_squash,no_subtree_check)"
+    state: present
+  loop: "{{ subDirPath }}"
+  when: "'master' in group_names"
+
+- name: Export NFS shares (Masters only)
+  command: exportfs -r
+  when: "'master' in group_names"

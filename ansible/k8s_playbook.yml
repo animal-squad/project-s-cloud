@@ -1,0 +1,37 @@
+---
+# k8s_playbook.yml
+- hosts: all_worker # origin all
+  become: true
+  pre_tasks:
+    - name: Print Start role
+      ansible.builtin.debug:
+        msg: "Let's start role play"
+  roles:
+    - role: install_k8s
+    - role: nfs
+      cluster_node_CIDR: 192.168.0.0/16
+
+- hosts: masters
+  become: true
+  roles:
+    - role: init_k8s
+  tasks:
+      # 검증 task
+    - name: Verify Kubernetes deployment status
+      ansible.builtin.command: kubectl get nodes
+      register: kubectl_output
+      changed_when: false
+      failed_when: kubectl_output.rc != 0
+      # 검증 완료 후 메시지 출력 task
+    - name: Assert Kubernetes is operational
+      ansible.builtin.assert:
+        that:
+          - kubectl_output.rc == 0
+          - "'Ready' in kubectl_output.stdout"
+        success_msg: "✅ Kubernetes cluster is up and all nodes are ready."
+        fail_msg: "❌ Kubernetes deployment failed or some nodes are not ready."
+
+  post_tasks:
+    - name: Print Finish role
+      ansible.builtin.debug:
+        msg: "Finish role play"

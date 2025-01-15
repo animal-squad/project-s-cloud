@@ -1,0 +1,4 @@
+---
+# roles/init_k8s/vars/main.yml
+Calico_version: v3.28.1
+Pod_CIDR: 172.16.0.0/24 # origin 172.16.0.0/12

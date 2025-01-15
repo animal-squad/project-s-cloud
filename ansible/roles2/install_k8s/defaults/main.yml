@@ -1,0 +1,3 @@
+---
+# defaults file for k8s
+cluster_node: 192.168.0.0/16
